@@ -1,0 +1,9 @@
+welcome: Welcome to memory game. I'm going to say three numbers for you to repeat backwards. Ready?
+
+round: Can you repeat the numbers {{ numbers|join(", ") }} backwards?
+
+win: Good job! Would you like to play again?
+
+lose: Sorry, that's the wrong answer. Would you like to play again?
+
+goodbye: Thanks for playing. Goodbye!
