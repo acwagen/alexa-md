@@ -1,0 +1,56 @@
+{
+    "interactionModel": {
+        "languageModel": {
+            "invocationName": "file system",
+            "intents": [
+                {
+                    "name": "StartIntent",
+                    "samples": [
+                        "start",
+                        "home"
+                    ]
+                },
+                {
+                    "name": "OpenIntent",
+                    "slots": [],
+                    "samples": [
+                        "open",
+                        "show"
+                    ]
+                },
+                {
+                    "name": "BackIntent",
+                    "samples": [
+                        "back"
+                    ]
+                },
+                {
+                    "name": "PreviousIntent",
+                    "samples": [
+                        "previous"
+                    ]
+                },
+                {
+                    "name": "NextIntent",
+                    "samples": [
+                        "next"
+                    ]
+                },
+                {
+                    "name": "HelpIntent",
+                    "samples": [
+                        "help"
+                    ]
+                },
+                {
+                    "name": "EndIntent",
+                    "samples": [
+                        "end",
+                        "exit"
+                    ]
+                }
+            ],
+            "types": []
+        }
+    }
+}

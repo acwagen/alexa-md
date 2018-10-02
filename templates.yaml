@@ -1,9 +1,9 @@
-welcome: Welcome to memory game. I'm going to say three numbers for you to repeat backwards. Ready?
+welcome: Welcome to Alexa MD.
 
-round: Can you repeat the numbers {{ numbers|join(", ") }} backwards?
+open: Opening {{filename}}
 
-win: Good job! Would you like to play again?
+close: Closing {{filename}}
 
-lose: Sorry, that's the wrong answer. Would you like to play again?
+help: Here are commands you may find helpful.
 
-goodbye: Thanks for playing. Goodbye!
+goodbye: Goodbye!
