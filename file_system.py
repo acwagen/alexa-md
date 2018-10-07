@@ -38,11 +38,13 @@ def open():
     return placeholder_response(open_msg)
 
 
-@ask.intent("HelpIntent")
+@ask.intent("AMAZON.HelpIntent")
 def help():
+    # for now, when user ask help, the alexa will navigate the user to screen.
+    # For Beta stage, with the help of session, the help info will be more 
+    # specific.
     help_msg = render_template('help')
-
-    return placeholder_response(help_msg)
+    return question(help_msg).reprompt(help_msg)
 
 
 if __name__ == '__main__':
