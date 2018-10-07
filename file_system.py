@@ -15,10 +15,7 @@ def placeholder_response(msg):
         'https://akc.org/wp-content/uploads/2015/10/Beagle-Puppies.jpg'
     ])
 
-    return question(msg).standard_card(title='Oops',
-        text='Not implemented yet!',
-        large_image_url=img_url,
-        small_image_url=img_url)
+    return question(msg).display_render(title='Not implemented yet',  template='BodyTemplate6', background_image_url=img_url)
 
 
 @ask.launch
