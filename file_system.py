@@ -1,6 +1,7 @@
 import logging, os
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session
+from jinja2 import Template
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -15,22 +16,18 @@ def placeholder_response(msg):
         'https://akc.org/wp-content/uploads/2015/10/Beagle-Puppies.jpg'
     ])
 
-    return question(msg).standard_card(title='Oops',
-        text='Not implemented yet!',
-        large_image_url=img_url,
-        small_image_url=img_url)
+    return question(msg).display_render(title='Not implemented yet',  template='BodyTemplate6', background_image_url=img_url)
 
 
 @ask.launch
 def launch():
-    welcome_msg = render_template('welcome')
-
-    return placeholder_response(welcome_msg)
-
+    return start()
 
 @ask.intent("StartIntent")
 def start():
-    return launch()
+    msg = render_template('welcome')
+    return placeholder_response(msg)
+    
 
 
 @ask.intent("OpenIntent")
@@ -41,42 +38,11 @@ def open():
     return placeholder_response(open_msg)
 
 
-@ask.intent("CloseIntent")
-def close():
-    filename = 'filename'
-    close_msg = render_template('close', filename=filename)
-
-    return placeholder_response(close_msg)
-
-
-@ask.intent("PreviousIntent")
-def previous():
-    filename = 'previous_filename'
-    previous_msg = render_template('open', filename=filename)
-
-    return placeholder_response(previous_msg)
-
-
-@ask.intent("NextIntent")
-def next():
-    filename = 'next_filename'
-    next_msg = render_template('open', filename=filename)
-
-    return placeholder_response(next_msg)
-
-
 @ask.intent("HelpIntent")
 def help():
     help_msg = render_template('help')
 
     return placeholder_response(help_msg)
-
-
-@ask.intent("EndIntent")
-def end():
-    goodbye_msg = render_template('goodbye')
-
-    return statement(goodbye_msg)
 
 
 if __name__ == '__main__':
