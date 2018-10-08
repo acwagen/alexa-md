@@ -14,10 +14,15 @@
                 },
                 {
                     "name": "OpenIntent",
-                    "slots": [],
+                    "slots": [
+                        {
+                            "name": "imageIndex",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
                     "samples": [
-                        "open",
-                        "show"
+                        "open {imageIndex}",
+                        "show {imageIndex}"
                     ]
                 },
                 {
