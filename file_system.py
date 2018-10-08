@@ -10,6 +10,9 @@ ask = Ask(app, "/")
 
 logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
+# global variables
+my_list = []
+
 def placeholder_response(msg, index):
     # import random
     # img_url = random.choice([
@@ -37,9 +40,16 @@ def placeholder_response(msg, index):
 
 def start_response_s3(msg):
     # TODO: don't generate list at every return to start... make it global?
-    s3 = boto3.client('s3', aws_access_key_id = 'AKIAJHIU2EXDJNXGHNJA', aws_secret_access_key='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')
+    
+    return question(msg).list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
+
+
+
+@ask.launch
+def launch():
+    s3 = boto3.client('s3')
     resp = s3.list_objects_v2(Bucket='mike-alexa-md')
-    my_list = []
+    
     for obj in resp['Contents']:
         file_name = obj['Key']
         true_file_name = file_name.split('.')[0]
@@ -59,19 +69,13 @@ def start_response_s3(msg):
             "textContent": {
               "primaryText": {
                 "text": true_file_name,
-                "type": "PlainText"
+                "type": "RichText"
               },
               "secondaryText": None,
               "tertiaryText": None
             }
           }
         my_list.append(item)
-    return question(msg).list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
-
-
-
-@ask.launch
-def launch():
     return start()
 
 @ask.intent("StartIntent")
