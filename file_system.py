@@ -2,6 +2,8 @@ import logging, os
 from flask import Flask, render_template
 from flask_ask import Ask, statement, question, session
 from jinja2 import Template
+from boto.s3.connection import S3Connection
+import boto3
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -33,69 +35,40 @@ def placeholder_response(msg, index):
 
 
 
-def start_response(msg):
-    img_url1 = "https://img.purch.com/w/660/aHR0cDovL3d3dy5saXZlc2NpZW5jZS5jb20vaW1hZ2VzL2kvMDAwLzA4OC85MTEvb3JpZ2luYWwvZ29sZGVuLXJldHJpZXZlci1wdXBweS5qcGVn"
-    img_url2 = 'https://fortunedotcom.files.wordpress.com/2017/08/512536165-e1510081190643.jpg'
-    img_url3 = 'https://akc.org/wp-content/uploads/2015/10/Beagle-Puppies.jpg'
-    item1 = {
+def start_response_s3(msg):
+    # TODO: don't generate list at every return to start... make it global?
+    s3 = boto3.client('s3', aws_access_key_id = 'AKIAJHIU2EXDJNXGHNJA', aws_secret_access_key='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')
+    resp = s3.list_objects_v2(Bucket='mike-alexa-md')
+    my_list = []
+    for obj in resp['Contents']:
+        file_name = obj['Key']
+        true_file_name = file_name.split('.')[0]
+        url = s3.generate_presigned_url('get_object',Params={'Bucket':'mike-alexa-md','Key':file_name,})
+        parts = url.split('?')
+        true_url = parts[0]
+        item = {
             "token": "List-Item-0",
             "image": {
               "contentDescription": "XYZ 1",
               "sources": [
                 {
-                  "url": img_url1
+                  "url": true_url
                 }
               ]
             },
             "textContent": {
               "primaryText": {
-                "text": "Pupper",
+                "text": true_file_name,
                 "type": "PlainText"
               },
               "secondaryText": None,
               "tertiaryText": None
             }
           }
-    item2 = {
-            "token": "List-Item-1",
-            "image": {
-              "contentDescription": "Sleepy Boi",
-              "sources": [
-                {
-                  "url": img_url2
-                }
-              ]
-            },
-            "textContent": {
-              "primaryText": {
-                "text": "Sleepy Boi",
-                "type": "PlainText"
-              },
-              "secondaryText": None,
-              "tertiaryText": None
-            }
-          }
-    item3 = {
-            "token": "List-Item-2",
-            "image": {
-              "contentDescription": "XYZ 3",
-              "sources": [
-                {
-                  "url": img_url3
-                }
-              ]
-            },
-            "textContent": {
-              "primaryText": {
-                "text": "Puppers",
-                "type": "PlainText"
-              },
-              "secondaryText": None,
-              "tertiaryText": None
-            }
-          }
-    my_list = [item1, item2, item3]
+        my_list.append(item)
     return question(msg).list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
+
+
 
 @ask.launch
 def launch():
@@ -104,7 +77,7 @@ def launch():
 @ask.intent("StartIntent")
 def start():
     msg = render_template('welcome')
-    return start_response(msg)
+    return start_response_s3(msg)
 
 
 
