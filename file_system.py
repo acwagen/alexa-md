@@ -4,6 +4,7 @@ from flask_ask import Ask, statement, question, session
 from jinja2 import Template
 from boto.s3.connection import S3Connection
 import boto3
+from botocore.errorfactory import ClientError
 
 app = Flask(__name__)
 ask = Ask(app, "/")
@@ -19,11 +20,22 @@ def open_response(msg, index):
     file_name = index + ".jpg"
     file_name = file_name.lower()
 
-    url = s3.generate_presigned_url('get_object',Params={'Bucket':'mike-alexa-md','Key':file_name,})
-    parts = url.split('?')
-    true_url = parts[0]
+    try:
+       s3.head_object(Bucket='alexa-md-495', Key=file_name)
+       url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
+       parts = url.split('?')
+       true_url = parts[0]
+       return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
+    except ClientError:
+      retry_message = 'There is no '+ index +' in the file system, please retry'
+      return question(retry_message).reprompt(retry_message)
 
-    return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
+
+    # url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
+    # parts = url.split('?')
+    # true_url = parts[0]
+
+    # return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
 
 
 
@@ -35,12 +47,12 @@ def start_response_s3(msg):
 @ask.launch
 def launch():
     s3 = boto3.client('s3')
-    resp = s3.list_objects_v2(Bucket='mike-alexa-md')
+    resp = s3.list_objects_v2(Bucket='alexa-md-495')
     
     for obj in resp['Contents']:
         file_name = obj['Key']
         true_file_name = file_name.split('.')[0]
-        url = s3.generate_presigned_url('get_object',Params={'Bucket':'mike-alexa-md','Key':file_name,})
+        url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
         parts = url.split('?')
         true_url = parts[0]
         item = {
