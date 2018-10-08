@@ -10,10 +10,13 @@ Select 'JSON Editor' and open intents.json in the editor.
 
 ### Prerequisites
 
-Install flask-ask with
+Install  with
 
 ```
-pip install flask-ask
+pip install virtualenv
+python -m virtualenv env
+source env/bin/activate
+pip install -e .
 ```
 and [download ngrok](https://ngrok.com/download).
 
@@ -23,18 +26,20 @@ and [download ngrok](https://ngrok.com/download).
 Start the Flask server with
 
 ```
-python file_system.py
+./bin/run
 ```
 
 In a separate terminal, start the ngrok server with
 
 ```
-ngrok.exe http 5000
+ngrok.exe http 8000
 ```
 
 Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https url given in the ngrok output into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
 
-## Other
-
-If running the app results in the error `module lib has no attribute x509v3_ext_get`, run
-```pip install 'cryptography<2.2'```.
+## User Guide
+To start the system, say 'File System'.<br/>
+To view the home page, say 'Start' or 'Home'.<br/>
+To view a certain image, say 'Open {imagename}'.<br/>
+To go back to home page, say 'Return to Start/home'.<br/>
+TO exit the system, say 'Goodbye'.<br/>
