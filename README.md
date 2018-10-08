@@ -6,7 +6,7 @@ An Alexa skill to assist surgeons in navigating a file system in the operating r
 
 Follow the [steps to create an Alexa skill](https://developer.amazon.com/docs/devconsole/create-a-skill-and-choose-the-interaction-model.html#create-a-new-skill) and give the skill the name and invocation name 'file system.'
 
-Select 'JSON Editor' and open intents.json in the editor.
+Select 'JSON Editor', copy the intents.json file and paste it into the editor.
 
 ### Prerequisites
 
@@ -37,9 +37,26 @@ ngrok.exe http 8000
 
 Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https url given in the ngrok output into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
 
+## AWS Configure
+
+The images accessed with this skill are stored in Amazon S3 buckets, which require access and secret keys. 
+Download AWS Command line with:
+
+```
+sudo apt install awscli
+```
+
+And configure your settings with:
+
+```
+aws configure
+```
+
+Set your access and secret keys to the ones we sent to you. For the last two inputs, the region is us-east-2 and format is JSON.
+
 ## User Guide
 To start the system, say 'File System'.<br/>
-To view the home page, say 'Start' or 'Home'.<br/>
 To view a certain image, say 'Open {imagename}'.<br/>
 To go back to home page, say 'Return to Start/home'.<br/>
-TO exit the system, say 'Goodbye'.<br/>
+To ask for help with other commands, say 'Help'.<br/>
+To exit the system, say 'Exit'.<br/>
