@@ -18,16 +18,24 @@
                         {
                             "name": "imageIndex",
                             "type": "AMAZON.NUMBER"
+                        },
+                        {
+                            "name": "imageName",
+                            "type": "AMAZON.US_FIRST_NAME"
                         }
                     ],
                     "samples": [
+                        "show {imageName}",
+                        "open {imageName}",
                         "open {imageIndex}",
                         "show {imageIndex}"
                     ]
                 },
                 {
                     "name": "AMAZON.HelpIntent",
-                    "samples": []
+                    "samples": [
+                        "help"
+                    ]
                 },
                 {
                     "name": "AMAZON.StopIntent",

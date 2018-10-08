@@ -13,34 +13,21 @@ logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 # global variables
 my_list = []
 
-def placeholder_response(msg, index):
-    # import random
-    # img_url = random.choice([
-    #     'https://img.purch.com/w/660/aHR0cDovL3d3dy5saXZlc2NpZW5jZS5jb20vaW1hZ2VzL2kvMDAwLzA4OC85MTEvb3JpZ2luYWwvZ29sZGVuLXJldHJpZXZlci1wdXBweS5qcGVn',
-    #     'https://fortunedotcom.files.wordpress.com/2017/08/512536165-e1510081190643.jpg',
-    #     'https://akc.org/wp-content/uploads/2015/10/Beagle-Puppies.jpg'
-    # ])
+def open_response(msg, index):
+    s3 = boto3.client('s3')
 
-    # return question(msg).display_render(title='Not implemented yet',  template='BodyTemplate6', background_image_url=img_url)
+    file_name = index + ".jpg"
+    file_name = file_name.lower()
 
-    print("INDEX NUMBER IS: ", index)
+    url = s3.generate_presigned_url('get_object',Params={'Bucket':'mike-alexa-md','Key':file_name,})
+    parts = url.split('?')
+    true_url = parts[0]
 
-    if index == '1':
-        img_url = 'https://img.purch.com/w/660/aHR0cDovL3d3dy5saXZlc2NpZW5jZS5jb20vaW1hZ2VzL2kvMDAwLzA4OC85MTEvb3JpZ2luYWwvZ29sZGVuLXJldHJpZXZlci1wdXBweS5qcGVn'
-    elif index == '2':
-        img_url = 'https://fortunedotcom.files.wordpress.com/2017/08/512536165-e1510081190643.jpg'
-    elif index == '3':
-        img_url = 'https://akc.org/wp-content/uploads/2015/10/Beagle-Puppies.jpg'
-    else:
-        img_url = 'https://j3uv01gyifh3iqdfjuwz0qip-wpengine.netdna-ssl.com/wp-content/uploads/2017/06/puppy.jpg'
-
-    return question(msg).display_render(title='Not implemented yet',  template='BodyTemplate6', background_image_url=img_url)
+    return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
 
 
 
-def start_response_s3(msg):
-    # TODO: don't generate list at every return to start... make it global?
-    
+def start_response_s3(msg):    
     return question(msg).list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
 
 
@@ -85,12 +72,12 @@ def start():
 
 
 
-@ask.intent("OpenIntent", mapping={'imageIndex': 'imageIndex'})
-def open(imageIndex):
-    filename = 'filename'
+@ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
+def open(imageName):
+    filename = str(imageName)
     open_msg = render_template('open', filename=filename)
 
-    return placeholder_response(open_msg, imageIndex)
+    return open_response(open_msg, imageName)
 
 
 @ask.intent("AMAZON.HelpIntent")
