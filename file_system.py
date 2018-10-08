@@ -105,7 +105,7 @@ def launch():
 def start():
     msg = render_template('welcome')
     return start_response(msg)
-    
+
 
 
 @ask.intent("OpenIntent", mapping={'imageIndex': 'imageIndex'})
@@ -116,10 +116,10 @@ def open(imageIndex):
     return placeholder_response(open_msg, imageIndex)
 
 
-@ask.intent("HelpIntent")
+@ask.intent("AMAZON.HelpIntent")
 def help():
     # for now, when user ask help, the alexa will navigate the user to screen.
-    # For Beta stage, with the help of session, the help info will be more 
+    # For Beta stage, with the help of session, the help info will be more
     # specific.
     help_msg = render_template('help')
     return question(help_msg).reprompt(help_msg)
