@@ -34,6 +34,13 @@ ngrok.exe http 5000
 
 Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https url given in the ngrok output into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
 
+## User Guide
+To start the system, say 'File System'.<br/>
+To view the home page, say 'Start' or 'Home'.<br/>
+To view a certain image, say 'Open {imagename}'.<br/>
+To go back to home page, say 'Return to Start/home'.<br/>
+TO exit the system, say 'Goodbye'.<br/>
+
 ## Other
 
 If running the app results in the error `module lib has no attribute x509v3_ext_get`, run
