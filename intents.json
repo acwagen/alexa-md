@@ -32,6 +32,19 @@
                     ]
                 },
                 {
+                    "name": "NextIntent",
+                    "slots": [
+                        {
+                            "name": "number",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "scroll {number}",
+                        "next {number}"
+                    ]
+                },
+                {
                     "name": "AMAZON.HelpIntent",
                     "samples": [
                         "help"
