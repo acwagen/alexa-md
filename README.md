@@ -13,7 +13,8 @@ Select 'JSON Editor' and open intents.json in the editor.
 Install  with
 
 ```
-python virtualenv env
+pip install virtualenv
+python -m virtualenv env
 source env/bin/activate
 pip install -e .
 ```
