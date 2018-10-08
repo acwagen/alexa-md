@@ -35,11 +35,11 @@ ngrok.exe http 5000
 Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https url given in the ngrok output into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
 
 ## User Guide
-To start the system, say 'File System'.
-To view the home page, say 'Start' or 'Home'.
-To view a certain image, say 'Open {imagename}'.
-To go back to home page, say 'Return to Start/home'.
-TO exit the system, say 'Goodbye'.
+To start the system, say 'File System'.\n
+To view the home page, say 'Start' or 'Home'.\n
+To view a certain image, say 'Open {imagename}'.\n
+To go back to home page, say 'Return to Start/home'.\n
+TO exit the system, say 'Goodbye'.\n
 
 ## Other
 
