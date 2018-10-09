@@ -12,6 +12,6 @@ setup(
         'Flask-Ask==0.9.8',
         'boto==2.49.0',
         'boto3==1.9.18',
-        'cryptography<2.2'
+        'pyOpenSSL==18.0.0'
     ],
 )

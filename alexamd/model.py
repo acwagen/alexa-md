@@ -21,7 +21,7 @@ def get_db():
     """Open a new database connection."""
     if not hasattr(flask.g, 'sqlite_db'):
         flask.g.sqlite_db = sqlite3.connect(
-            alexa-md.app.config['DATABASE_FILENAME'])
+            alexamd.app.config['DATABASE_FILENAME'])
         flask.g.sqlite_db.row_factory = dict_factory
 
         # Foreign keys have to be enabled per-connection.  This is an sqlite3
