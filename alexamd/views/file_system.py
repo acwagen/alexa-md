@@ -119,7 +119,3 @@ def help():
     # specific.
     help_msg = render_template('help')
     return question(help_msg).reprompt(help_msg)
-
-
-if __name__ == '__main__':
-    app.run(debug=True)
