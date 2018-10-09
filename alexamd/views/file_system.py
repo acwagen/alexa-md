@@ -112,6 +112,15 @@ def next(number):
     return open_response(next_msg, image_name)
 
 
+@ask.intent("MoveScreenIntent")
+def MoveScreen():
+    # only used for the home page right now. Different from scroll
+    my_list.append(my_list[0])
+    del my_list[0]
+    return question("Move Screen").list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
+
+
+
 @ask.intent("AMAZON.HelpIntent")
 def help():
     # for now, when user ask help, the alexa will navigate the user to screen.
