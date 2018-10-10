@@ -10,10 +10,10 @@ from botocore.errorfactory import ClientError
 # global variables
 my_list = []
 
-def open_response(msg, index):
+def open_response(msg, filename):
     s3 = boto3.client('s3')
 
-    file_name = index + ".jpg"
+    file_name = filename + ".jpg"
     file_name = file_name.lower()
 
     try:
@@ -21,17 +21,10 @@ def open_response(msg, index):
        url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
        parts = url.split('?')
        true_url = parts[0]
-       return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
+       return question(msg).display_render(title=filename,  template='BodyTemplate7', image=true_url)
     except ClientError:
-      retry_message = 'There is no '+ index +' in the file system, please retry'
+      retry_message = 'There is no '+ filename +' in the file system, please retry'
       return question(retry_message).reprompt(retry_message)
-
-
-    # url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
-    # parts = url.split('?')
-    # true_url = parts[0]
-
-    # return question(msg).display_render(title=index,  template='BodyTemplate7', image=true_url)
 
 
 
@@ -83,31 +76,49 @@ def start():
 
 @ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
 def open(imageName):
-    filename = str(imageName)
+    try:
+        imageName = int(imageName)
+        # it's a number
+        filename = str(my_list[imageName - 1]["textContent"]["primaryText"]["text"])
+    except ValueError:
+        # it's a string like 'Mike'
+        filename = str(imageName)
+
     open_msg = render_template('open', filename=filename)
 
+    # initialize current index variable in flask session
     for i in range(len(my_list)):
-        print(my_list[i]["textContent"]["primaryText"]["text"])
         if my_list[i]["textContent"]["primaryText"]["text"] == filename.lower():
             session.attributes['curr_index'] = i
             break
 
-    return open_response(open_msg, imageName)
+    return open_response(open_msg, filename)
 
 
 @ask.intent("NextIntent", mapping={'number': 'number'})
 def next(number):
     if session.attributes['curr_index'] == -1:
         return help()
+    
+    last_index = len(my_list) - 1
 
     if not number:
-        number = (session.attributes['curr_index'] + 1) % len(my_list)
+        number = 1
     else:
         number = int(number)
-        number = (session.attributes['curr_index'] + number) % len(my_list)
+    
+    if session.attributes['curr_index'] == last_index:
+        help_msg = "Cannot go next. You're already at the end."
+        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
+        return open_response(help_msg, image_name)
+    if session.attributes['curr_index'] + number > last_index:
+        session.attributes['curr_index'] = last_index
+        msg = "You're at the end of the folder."
+        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
+        return open_response(msg, image_name)
 
-    session.attributes['curr_index'] = number
-    image_name = my_list[number]["textContent"]["primaryText"]["text"]
+    session.attributes['curr_index'] += number
+    image_name = my_list[session.attributes['curr_index']]["textContent"]["primaryText"]["text"]
     next_msg = render_template('next', number=number)
     return open_response(next_msg, image_name)
 
