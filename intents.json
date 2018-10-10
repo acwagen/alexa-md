@@ -89,7 +89,6 @@
                 {
                     "name": "AMAZON.ScrollRightIntent",
                     "samples": [
-                        "move"
                     ]
                 },
                 {
@@ -103,13 +102,6 @@
                 {
                     "name": "AMAZON.ScrollUpIntent",
                     "samples": []
-                },
-                {
-                    "name": "MoveScreenIntent",
-                    "slots": [],
-                    "samples": [
-                        "move screen"
-                    ]
                 }
             ],
             "types": []

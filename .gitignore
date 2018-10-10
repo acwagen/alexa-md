@@ -10,3 +10,4 @@ var/
 .idea/
 ngrok.exe
 bin/
+venv/

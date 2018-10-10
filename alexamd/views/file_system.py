@@ -112,12 +112,10 @@ def next(number):
     return open_response(next_msg, image_name)
 
 
-@ask.intent("MoveScreenIntent")
-def MoveScreen():
+@ask.intent("AdjustScreenIntent")
+def AdjustScreen():
     # only used for the home page right now. Different from scroll
-    my_list.append(my_list[0])
-    del my_list[0]
-    return question("Move Screen").list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
+    return question("Adjust Screen").list_display_render(title='Welcome', template='ListTemplate2', listItems = my_list, hintText = 'Open 1')
 
 
 
