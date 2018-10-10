@@ -6,7 +6,7 @@ close: Closing {{filename}}
 
 next: Next {{number}}
 
-help: You can say home to navigate to the home page or you can say exit. What can I help with?
+help: You can say return to home to navigate to the home page, open one to open the first image or you can say exit. What can I help with?
 
 goodbye: Goodbye!
 

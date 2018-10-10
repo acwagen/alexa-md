@@ -56,7 +56,8 @@ Set your access and secret keys to the ones we sent to you. For the last two inp
 
 ## User Guide
 To start the system, say 'File System'.<br/>
-To view a certain image, say 'Open {imagename}'.<br/>
+To view a certain image, say 'Open {imagename}' or 'Open {imageindex}.<br/>
+To view the next image, say 'Next {number}.<br/>
 To go back to home page, say 'Return to Start/home'.<br/>
 To ask for help with other commands, say 'Help'.<br/>
 To exit the system, say 'Exit'.<br/>
