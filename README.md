@@ -6,8 +6,7 @@ An Alexa skill to assist surgeons in navigating a file system in the operating r
 
 Follow the [steps to create an Alexa skill](https://developer.amazon.com/docs/devconsole/create-a-skill-and-choose-the-interaction-model.html#create-a-new-skill) and give the skill the name and invocation name 'file system.'
 
-Select 'JSON Editor', copy the intents.json file and paste it into the editor.
-Build the model.
+Select 'JSON Editor', open and save intents.json in the editor. Toggle 'Display Interface' under the Interfaces section. Build the model.
 
 Running the skill locally is optional. To run with the deployed app, follow the instructions below to set the skill's endpoint, and enter https://e73a546c.ngrok.io/ for the url.
 
