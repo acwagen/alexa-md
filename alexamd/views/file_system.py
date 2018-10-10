@@ -35,6 +35,7 @@ def start_response_s3(msg):
 
 @ask.launch
 def launch():
+    del my_list[:]
     s3 = boto3.client('s3')
     resp = s3.list_objects_v2(Bucket='alexa-md-495')
 
