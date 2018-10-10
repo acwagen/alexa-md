@@ -9,4 +9,4 @@ env/
 var/
 .idea/
 ngrok.exe
-
+bin/

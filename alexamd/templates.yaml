@@ -4,6 +4,8 @@ open: Opening {{filename}}
 
 close: Closing {{filename}}
 
+next: Next {{number}}
+
 help: You can say home to navigate to the home page or you can say exit. What can I help with?
 
 goodbye: Goodbye!
