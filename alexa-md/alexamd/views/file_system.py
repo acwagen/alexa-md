@@ -35,6 +35,7 @@ def start_response_s3(msg):
 
 @ask.launch
 def launch():
+    del my_list[:]
     s3 = boto3.client('s3')
     resp = s3.list_objects_v2(Bucket='alexa-md-495')
 
@@ -71,6 +72,7 @@ def launch():
 @ask.intent("StartIntent")
 def start():
     msg = render_template('welcome')
+    session.attributes['curr_index'] = -1
     return start_response_s3(msg)
 
 
@@ -136,4 +138,8 @@ def help():
     # For Beta stage, with the help of session, the help info will be more
     # specific.
     help_msg = render_template('help')
-    return question(help_msg).reprompt(help_msg)
+    if session.attributes['curr_index'] == -1:
+        return start_response_s3(help_msg)
+    else:
+        image_name = my_list[session.attributes['curr_index']]["textContent"]["primaryText"]["text"]
+        return open_response(help_msg, image_name)
