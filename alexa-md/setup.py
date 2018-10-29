@@ -8,10 +8,11 @@ setup(
     packages=['alexamd'],
     include_package_data=True,
     install_requires=[
-        'Flask==0.12.1',
-        'Flask-Ask==0.9.8',
-        'boto==2.49.0',
-        'boto3==1.9.18',
-        'pyOpenSSL==18.0.0'
+        'flask',
+        'flask_ask',
+        'boto',
+        'boto3',
+        'pyOpenSSL==18.0.0',
+        'requests'
     ],
 )

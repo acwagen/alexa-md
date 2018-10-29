@@ -3,7 +3,6 @@ from flask import render_template, request, session
 from s3utils import s3upload
 import uuid
 
-
 @app.route('/', methods=['GET', 'POST'])
 def index():
     if request.method == 'POST':
@@ -32,6 +31,8 @@ def upload(patient_id):
         print('Adding image(s) to collection with id  {}'.format(collection_id))
 
         for file in request.files.getlist('files'):
+            # TODO: check file format
+            # TODO: convert Dicom to png 
             # TODO: insert into images table
             image_id = str(uuid.uuid1())
             s3upload(image_id, file)
