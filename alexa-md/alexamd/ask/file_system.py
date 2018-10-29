@@ -33,6 +33,40 @@ def start_response_s3(msg):
 
 
 
+def scroll(number):
+    if session.attributes['curr_index'] == -1:
+        return help()
+    
+    last_index = len(my_list) - 1
+
+    if not number:
+        number = 1
+    else:
+        number = int(number)
+    
+    if session.attributes['curr_index'] + number > last_index:
+        session.attributes['curr_index'] = last_index
+        msg = "You're at the end of the folder."
+        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
+        return open_response(msg, image_name)
+    
+    if session.attributes['curr_index'] + number < 0:
+        session.attributes['curr_index'] = 0
+        msg = "You're at the beginning of the folder."
+        image_name = my_list[0]["textContent"]["primaryText"]["text"]
+        return open_response(msg, image_name)
+
+    session.attributes['curr_index'] += number
+    image_name = my_list[session.attributes['curr_index']]["textContent"]["primaryText"]["text"]
+    if number > 0:
+        msg = render_template('next', number=number)
+    else:
+        number *= -1
+        msg = render_template('previous', number=number)
+    return open_response(msg, image_name)
+
+
+
 @ask.launch
 def launch():
     del my_list[:]
@@ -113,16 +147,57 @@ def next(number):
         help_msg = "Cannot go next. You're already at the end."
         image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
         return open_response(help_msg, image_name)
-    if session.attributes['curr_index'] + number > last_index:
-        session.attributes['curr_index'] = last_index
-        msg = "You're at the end of the folder."
-        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
-        return open_response(msg, image_name)
 
-    session.attributes['curr_index'] += number
-    image_name = my_list[session.attributes['curr_index']]["textContent"]["primaryText"]["text"]
-    next_msg = render_template('next', number=number)
-    return open_response(next_msg, image_name)
+    return scroll(number)
+
+
+@ask.intent("AMAZON.NextIntent")
+def nextOne():
+    if session.attributes['curr_index'] == -1:
+        return help()
+
+
+    last_index = len(my_list) - 1
+    
+    if session.attributes['curr_index'] == last_index:
+        help_msg = "Cannot go next. You're already at the end."
+        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
+        return open_response(help_msg, image_name)
+    
+    return scroll(1)
+
+
+@ask.intent("PreviousIntent", mapping={'number': 'number'})
+def previous(number):
+    if session.attributes['curr_index'] == -1:
+        return help()
+    
+    last_index = len(my_list) - 1
+
+    if not number:
+        number = -1
+    else:
+        number = int(number) * -1
+    
+    if session.attributes['curr_index'] == 0:
+        help_msg = "Cannot go previous. You're already at the front."
+        image_name = my_list[0]["textContent"]["primaryText"]["text"]
+        return open_response(help_msg, image_name)
+
+    return scroll(number)
+
+
+@ask.intent("AMAZON.PreviousIntent")
+def previousOne():
+    if session.attributes['curr_index'] == -1:
+        return help()
+    
+    if session.attributes['curr_index'] == 0:
+        help_msg = "Cannot go previous. You're already at the front."
+        image_name = my_list[0]["textContent"]["primaryText"]["text"]
+        return open_response(help_msg, image_name)
+
+    return scroll(-1)
 
 
 @ask.intent("AdjustScreenIntent")

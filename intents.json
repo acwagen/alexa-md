@@ -45,6 +45,19 @@
                     ]
                 },
                 {
+                    "name": "PreviousIntent",
+                    "slots": [
+                        {
+                            "name": "number",
+                            "type": "AMAZON.NUMBER"
+                        }
+                    ],
+                    "samples": [
+                        "scroll back {number}",
+                        "previous {number}"
+                    ]
+                },
+                {
                     "name": "AMAZON.HelpIntent",
                     "samples": [
                         "help"
