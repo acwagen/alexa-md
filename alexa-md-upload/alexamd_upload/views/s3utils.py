@@ -8,19 +8,12 @@ def s3upload(id, file):
     """
 
     print('Uploading {} to S3 as {}.'.format(file, id))
-    s3 = boto3.client('s3')
-    s3.upload_file(file, 'alexa-md-495', id)
 
 def s3delete(id):
     """Remove file with name id from our S3 bucket."""
 
     print('Removing {} from S3.'.format(id))
-    s3 = boto3.client('s3')
-    response = s3.delete_object(
-        Bucket='alexa-md-495',
-        Key=id
-    )
-    print('response: {}'.format(response))
+
 
 """
 s3fetch(file_name):
