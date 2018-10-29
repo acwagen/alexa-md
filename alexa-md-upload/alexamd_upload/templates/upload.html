@@ -1,7 +1,20 @@
 {% extends "layout.html" %}
 {% block content %}
 <form action='#' method="post" enctype="multipart/form-data">
-  <input type="file" name="files" multiple>
-  <input type="submit" value="upload new file">
+    <p>Collection:
+        <select name='collection' onchange="if (this.selectedIndex == 0) { document.getElementById('new_collection').style.display='inline'; } else { document.getElementById('new_collection').style.display='none'; }">
+            <option value="-1" selected>New Collection</option>
+            {% for collection in collections %}
+            <option value="{{ collection['id'] }}">{{ collection['name'] }}</option>
+            {% endfor %}
+        </select>
+    </p>
+    <p id="new_collection">Collection Name:
+        <input type="text" name="new_collection" value="" />
+    </p>
+    <p>Files:
+        <input type="file" name="files" multiple>
+    </p>
+    <input type="submit" value="upload new files">
 </form>
 {% endblock %}

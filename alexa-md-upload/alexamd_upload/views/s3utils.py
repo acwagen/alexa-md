@@ -1,9 +1,18 @@
 from boto.s3.connection import S3Connection
 import boto3
 
-def s3upload(file):
-    print('Uploading {}'.format(file))
+def s3upload(id, file):
+    """Upload a file to our S3 bucket with name id.
 
+    file is of type `:class:werkzeug.datastructures.FileStorage`
+    """
+
+    print('Uploading {} to S3 as {}.'.format(file, id))
+
+def s3delete(id):
+    """Remove file with name id from our S3 bucket."""
+
+    print('Removing {} from S3.'.format(id))
 
 """
 s3fetch(file_name):
