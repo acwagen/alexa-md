@@ -7,7 +7,7 @@ import boto3
 from botocore.errorfactory import ClientError
 import sqlite3
 
-conn = sqlite3.connect('alexamd.sqlite3')
+conn = sqlite3.connect('alexamd.db')
 
 # global variables
 my_list = []
