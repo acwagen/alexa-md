@@ -9,6 +9,5 @@ SECRET_KEY = b'FIXME SET THIS WITH: $ python3 -c "import os; print(os.urandom(24
 
 
 DATABASE_FILENAME = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.realpath(__file__))),
-    'var', 'alexamd.sqlite3'
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))), 'alexa-md', 'var', 'alexamd.db'
 )

@@ -7,6 +7,11 @@
 <p style="text-align:left;">
 <a href="/">Home</a> | <a href="/manage/">Manage Patients</a>{% if patient_id %} | <a href="/patient/{{ patient_id }}/upload/">Upload Images</a> | <a href="/patient/{{ patient_id }}/manage/">Manage Images</a> {% endif %}
 </p>
+{% if patient_name %}
+<p style="text-align:right;">
+	{{ patient_name }}
+</p>
+{% endif %}
 </header>
 <body>
 {% block content %}{% endblock %}
