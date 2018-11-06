@@ -1,15 +1,15 @@
 {% extends "layout.html" %}
 {% block content %}
 <form action='#' method="post" enctype="multipart/form-data">
-    <p>Collection:
+    <p>Sequence:
         <select name='collection' onchange="if (this.selectedIndex == 0) { document.getElementById('new_collection').style.display='inline'; } else { document.getElementById('new_collection').style.display='none'; }">
-            <option value="-1" selected>New Collection</option>
+            <option value="-1" selected>New Sequence</option>
             {% for collection in collections %}
             <option value="{{ collection['id'] }}">{{ collection['name'] }}</option>
             {% endfor %}
         </select>
     </p>
-    <p id="new_collection">Collection Name:
+    <p id="new_collection">Sequence Name:
         <input type="text" name="new_collection" value="" />
     </p>
     <p>Files:
@@ -17,4 +17,15 @@
     </p>
     <input type="submit" value="upload new files">
 </form>
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <ul>
+    {% for category, message in messages %}
+        {% if category == 'error' %}
+          <li>{{ message }}</li>
+        {% endif %}
+    {% endfor %}
+    </ul>
+  {% endif %}
+{% endwith %}
 {% endblock %}
