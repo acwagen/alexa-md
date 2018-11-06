@@ -10,6 +10,9 @@ setup(
     install_requires=[
         'flask',
         'boto',
-        'boto3'
+        'boto3',
+        'numpy',
+        'pypng',
+        'pydicom'
     ],
 )

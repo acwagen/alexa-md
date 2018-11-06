@@ -1,1 +1,1 @@
-from views import *
+from alexamd_upload.views.views import *

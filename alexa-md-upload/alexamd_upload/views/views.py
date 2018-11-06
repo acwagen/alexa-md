@@ -1,7 +1,10 @@
 from alexamd_upload import app, model
 from flask import render_template, request, session
-from s3utils import s3upload
+from s3utils import s3upload, s3delete
 import uuid
+import png
+import numpy as np
+import pydicom
 
 def get_context():
     context = {}
@@ -36,14 +39,15 @@ def upload(patient_id):
         # collection_id < 0 means a new collection should be created
         if collection_id < 0:
             print('Creating new collection with name {}'.format(request.form['new_collection']))
-
-            study = 'TODO'
             db.execute('insert into collections(c_name, study, pid) values (?, ?, ?)',
-                       (request.form['new_collection'], study, session['patient_id']))
+            (request.form['new_collection'], 'Other', session['patient_id']))
             collection_id = db.execute('select max(cid) as new_cid from collections').fetchone()['new_cid']
+
 
         print('Adding image(s) to collection with id  {}'.format(collection_id))
 
+        study = db.execute('select study from collections where cid = ?',
+                           (collection_id,)).fetchone()['Study']
         cur_idx = db.execute('select max(ind) as start_idx from images where cid = ?',
                                (collection_id,)).fetchone()['start_idx']
         if not cur_idx:
@@ -53,10 +57,39 @@ def upload(patient_id):
             image_id = str(uuid.uuid1())
             db.execute('insert into images(iid, cid, ind) values (?,?,?)',
                        (image_id, collection_id, cur_idx))
-            # TODO: check file format
-            # TODO: convert Dicom to png
-            s3upload(image_id, file)
+
+            # convert dicom to jpeg. (based off of:
+            # https://github.com/pydicom/pydicom/issues/352#issuecomment-406767850)
+            try:
+                ds = pydicom.dcmread(file)
+            except pydicom.errors.InvalidDicomError:
+                print('Error: invalid dicom')
+                # TODO: alert user of error
+                continue
+
+            if study == 'Other':
+                study = ds.Modality
+            elif study != ds.Modality:
+                # TODO: alert user or error
+                print('Error: images in collection are of different modalities')
+
+            # Convert to float to avoid overflow or underflow losses.
+            image_2d = ds.pixel_array.astype(float)
+
+            # Rescaling grey scale between 0-255
+            image_2d_scaled = (np.maximum(image_2d,0) / image_2d.max()) * 255.0
+
+            # Convert to uint
+            image_2d_scaled = np.uint8(image_2d_scaled)
+            image = png.from_array(image_2d_scaled, 'L')
+
+            # upload image object
+            s3upload(image_id, image)
             cur_idx += 1
+
+        if study != 'Other':
+            db.execute('update collections set study = ? where cid = ?',
+                (study, collection_id,))
 
     context = get_context()
     context['collections'] = []
@@ -83,10 +116,8 @@ def manage_patient(patient_id):
             db.execute('delete from collections where cid = ?', (request.form['id'],))
         else:
             print('Creating new collection with name {}'.format(request.form['name']))
-
-            study = 'TODO'
             db.execute('insert into collections(c_name, study, pid) values (?, ?, ?)',
-                       (request.form['name'], study, session['patient_id']))
+                       (request.form['name'], 'Other', session['patient_id']))
 
     context = get_context()
 
