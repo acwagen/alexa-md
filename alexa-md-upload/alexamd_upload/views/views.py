@@ -10,21 +10,27 @@ def get_context():
     context = {}
     if 'patient_id' in session:
         context['patient_id'] = session['patient_id']
+    if 'patient_name' in session:
+        context['patient_name'] = session['patient_name']
 
     return context
 
 @app.route('/', methods=['GET', 'POST'])
 def index():
+    db = model.get_db()
+
     if request.method == 'POST':
         session['patient_id'] = request.form['patient']
+
+        patient = db.execute('select p_first, p_last from patients where pid = ?',
+            (session['patient_id'],)).fetchone()
+        session['patient_name'] = '{}, {}'.format(patient['P_Last'], patient['P_First'])
 
     context = get_context()
     context['patients'] = []
 
-    db = model.get_db()
-
     for patient in db.execute('select pid, p_first, p_last from patients'):
-        context['patients'].append({'id': patient['PID'], 'name': '{} {}'.format(patient['P_First'], patient['P_Last'])})
+        context['patients'].append({'id': patient['PID'], 'name': '{}, {}'.format(patient['P_Last'], patient['P_First'])})
 
     return render_template('index.html', **context)
 
