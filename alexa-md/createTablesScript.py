@@ -1,10 +1,13 @@
 import sqlite3
+import os
 
-conn = sqlite3.connect('var/alexamd.db')
+project_root = os.path.dirname(os.path.realpath(__file__))
+
+conn = sqlite3.connect(os.path.join(project_root, 'var', 'alexamd.db'))
 
 print("successful connection")
 
-q = open('sql/createTables.sql', 'r').read()
+q = open(os.path.join(project_root, 'sql', 'createTables.sql'), 'r').read()
 print("successful query read")
 
 c = conn.cursor()
