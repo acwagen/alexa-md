@@ -15,4 +15,9 @@ setup(
         'pypng',
         'pydicom'
     ],
+    tests_require=[
+        'bs4',
+        'requests'
+    ],
+    test_suite='alexamd_upload.tests'
 )
