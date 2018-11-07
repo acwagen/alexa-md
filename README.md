@@ -8,44 +8,68 @@ Follow the [steps to create an Alexa skill](https://developer.amazon.com/docs/de
 
 Select 'JSON Editor', open and save intents.json in the editor. Toggle 'Display Interface' under the Interfaces section. Build the model.
 
-Running the skill locally is optional. To run with the deployed app, follow the instructions below to set the skill's endpoint, and enter https://e73a546c.ngrok.io/ for the url.
-
-Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https ngrok url into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
+Navigate to the 'Endpoint' section of the Alexa Developer Console of the File System skill. Select the HTTPS button and paste the https ngrok url (from the directions below) into the 'Default Region' field. Select 'My development endpoint is a sub-domain of a domain that has a wildcard certificate from a certificate authority', save the endpoint, and navigate to the Test tab. Start the skill with the invocation name, 'file system.'
 
 ### Prerequisites
 
-To install and run locally, install  with
+Set up the environment with
 
 ```
 pip install virtualenv
+```
+
+To install each subproject:
+
+```
+cd $subproject_folder
 python -m virtualenv env
 source env/bin/activate
 pip install -e .
 ```
-and [download ngrok](https://ngrok.com/download).
+
+Initialize/reset the database (the same database will be used by each subproject):
+
+```
+cd alexa-md
+./bin/alexamddb
+```
+
+In order to run Alexa MD through the Alexa Developer Console, [download ngrok](https://ngrok.com/download).
 
 ## AWS Configure
 
-The images accessed with this skill are stored in Amazon S3 buckets, which require access and secret keys.
+The images accessed within the apps are stored in an Amazon S3 bucket, which requires access and secret keys.
 Download AWS Command line with:
 
 ```
 sudo apt install awscli
 ```
 
-And configure your settings with:
+And configure the settings with:
 
 ```
 aws configure
 ```
 
-Set your access and secret keys to the ones we sent to you. For the last two inputs, the region is us-east-2 and format is JSON.
+Set the access and secret keys. The region input is us-east-2 and the format input is JSON.
 
-## Running the skill
+## Running the web app (alexa-md-upload)
 
-Start the local Flask server with
+Navigate to the subproject folder and start the local Flask server with
 
 ```
+cd alexa-md-upload
+./bin/run
+```
+
+Once the app is running, go to http://localhost:8000/ in a browser.
+
+## Running the skill (alexa-md)
+
+Navigate to the subproject folder and start the local Flask server with
+
+```
+cd alexa-md
 ./bin/run
 ```
 
@@ -57,7 +81,7 @@ In a separate terminal, start the ngrok server with
 
 Copy the url from the ngrok output and enter it as the skill's endpoint in the developer console as described above.
 
-## User Guide
+## Alexa MD User Guide
 To start the system, say 'File System'.<br/>
 To view a certain image, say 'Open {imagename}' or 'Open {imageindex}.<br/>
 To view the next image, say 'Next {number}.<br/>
