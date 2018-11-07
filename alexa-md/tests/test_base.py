@@ -1,7 +1,3 @@
-"""
-Smoke test using the samples.
-"""
-
 import unittest
 from alexamd import app
 from requests import post

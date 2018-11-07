@@ -10,6 +10,14 @@ setup(
     install_requires=[
         'flask',
         'boto',
-        'boto3'
+        'boto3',
+        'numpy',
+        'pypng',
+        'pydicom'
     ],
+    tests_require=[
+        'bs4',
+        'requests'
+    ],
+    test_suite='alexamd_upload.tests'
 )

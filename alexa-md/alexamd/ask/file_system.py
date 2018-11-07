@@ -5,7 +5,9 @@ from jinja2 import Template
 from boto.s3.connection import S3Connection
 import boto3
 from botocore.errorfactory import ClientError
+import sqlite3
 
+conn = sqlite3.connect('alexamd.db')
 
 # global variables
 my_list = []
