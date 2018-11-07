@@ -1,0 +1,10 @@
+#! /bin/bash
+
+if [ ! -d var ]; then
+  mkdir var
+fi
+
+rm -rf var/alexamd.db
+
+python createTablesScript.py
+python dataScript.py
