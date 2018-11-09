@@ -7,10 +7,48 @@ import boto3
 from botocore.errorfactory import ClientError
 import sqlite3
 
+
 conn = sqlite3.connect('alexamd.db')
 
 # global variables
-my_list = []
+
+def get_db():
+    if not hasattr(flask.g, 'sqlite_db'):
+        flask.g.sqlite_db = sqlite3.connect(
+            'var/alexamd.db')
+        flask.g.sqlite_db.row_factory = dict_factory
+
+        # Foreign keys have to be enabled per-connection.  This is an sqlite3
+        # backwards compatibility thing.
+        flask.g.sqlite_db.execute("PRAGMA foreign_keys = ON")
+
+    return flask.g.sqlite_db
+
+def close_db():
+    if hasattr(flask.g, 'sqlite_db'):
+        flask.g.sqlite_db.commit()
+        flask.g.sqlite_db.close()
+
+
+def display_text_items(names):
+    res = []
+    for name in names:
+        item = {
+            "token": "List-Item-0",
+            "textContent": {
+                "primaryText": {
+                    "text": name,
+                    "type": "RichText"
+                },
+                "secondaryText": None,
+                "tertiaryText": None
+            }
+        }
+        res.append(item)
+    return res
+
+
+
 
 def open_response(msg, filename):
     s3 = boto3.client('s3')
@@ -71,45 +109,55 @@ def scroll(number):
 
 @ask.launch
 def launch():
-    del my_list[:]
-    s3 = boto3.client('s3')
-    resp = s3.list_objects_v2(Bucket='alexa-md-495')
 
-    for obj in resp['Contents']:
-        file_name = obj['Key']
-        true_file_name = file_name.split('.')[0]
-        url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
-        parts = url.split('?')
-        true_url = parts[0]
-        item = {
-            "token": "List-Item-0",
-            "image": {
-              "contentDescription": "XYZ 1",
-              "sources": [
-                {
-                  "url": true_url
-                }
-              ]
-            },
-            "textContent": {
-              "primaryText": {
-                "text": true_file_name,
-                "type": "RichText"
-              },
-              "secondaryText": None,
-              "tertiaryText": None
-            }
-          }
-        my_list.append(item)
-    session.attributes['curr_index'] = -1
-    return start()
+    # s3 = boto3.client('s3')
+    # resp = s3.list_objects_v2(Bucket='alexa-md-495')
+
+    # for obj in resp['Contents']:
+    #     file_name = obj['Key']
+    #     true_file_name = file_name.split('.')[0]
+    #     url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
+    #     parts = url.split('?')
+    #     true_url = parts[0]
+    #     item = {
+    #         "token": "List-Item-0",
+    #         "image": {
+    #           "contentDescription": "XYZ 1",
+    #           "sources": [
+    #             {
+    #               "url": true_url
+    #             }
+    #           ]
+    #         },
+    #         "textContent": {
+    #           "primaryText": {
+    #             "text": true_file_name,
+    #             "type": "RichText"
+    #           },
+    #           "secondaryText": None,
+    #           "tertiaryText": None
+    #         }
+    #       }
+    #     my_list.append(item)
+    # session.attributes['curr_index'] = -1
+    db = get_db()
+    cur = db.execute('select * from Patients')
+    patent_info = cur.fetchall()
+    patient_names = []
+    for row in patent_info:
+        patient_names.append("Patient: "+row['PID'])
+
+    msg = render_template('welcome')
+    session['level'] = 'home'
+    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
 
 
 @ask.intent("StartIntent")
 def start():
-    msg = render_template('welcome')
-    session.attributes['curr_index'] = -1
-    return start_response_s3(msg)
+    # msg = render_template('welcome')
+    # session.attributes['curr_index'] = -1
+    # return start_response_s3(msg)
+    launch()
 
 
 @ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
@@ -121,16 +169,27 @@ def open(imageName):
     except ValueError:
         # it's a string like 'Mike'
         filename = str(imageName)
+    if session['level']=='home':
+        
 
-    open_msg = render_template('open', filename=filename)
+    elif session['level'] == 'patient':
 
-    # initialize current index variable in flask session
-    for i in range(len(my_list)):
-        if my_list[i]["textContent"]["primaryText"]["text"] == filename.lower():
-            session.attributes['curr_index'] = i
-            break
+    elif session['level'] == 'study':
+    
+    elif session['level'] == image:
+    
+    else:
+        exit(1)
 
-    return open_response(open_msg, filename)
+    # open_msg = render_template('open', filename=filename)
+
+    # # initialize current index variable in flask session
+    # for i in range(len(my_list)):
+    #     if my_list[i]["textContent"]["primaryText"]["text"] == filename.lower():
+    #         session.attributes['curr_index'] = i
+    #         break
+
+    # return open_response(open_msg, filename)
 
 
 @ask.intent("NextIntent", mapping={'number': 'number'})
