@@ -38,11 +38,13 @@ def s3upload(id, file):
     """
 
     print('Uploading {} to S3 as {}.'.format(file, id))
-    s3 = boto3.client('s3')
-    s3.upload_file(file, 'alexa-md-495', id)
+    # s3 = boto3.client('s3')
+    # s3.upload_file(file, 'alexa-md-495', id)
+    
+    s3 = boto3.resource('s3')
+    s3.Bucket('alexa-md-495').upload_file(file, id)
 
-
-def s3delete(id):
+def s3delete(ids):
     """Remove file with name id from our S3 bucket."""
 
     print('Removing {} from S3.'.format(id))
@@ -50,6 +52,21 @@ def s3delete(id):
     response = s3.delete_object(
         Bucket='alexa-md-495',
         Key=id
+    )
+
+    s3 = boto3.resource('s3')
+    bucket = s3.Bucket('alexa-md-495')
+    # create Objects list thing
+    images_to_delete = []
+    for id in ids:
+        images_to_delete.append({
+            'Key': id
+        })
+
+    response = bucket.delete_objects(
+        Delete={
+            'Objects': images_to_delete
+        },
     )
     print('response: {}'.format(response))
 

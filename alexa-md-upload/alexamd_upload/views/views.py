@@ -93,6 +93,7 @@ def upload(patient_id):
             image = png.from_array(image_2d_scaled, 'L')
 
             # upload image object
+            print('ANTHONY IS UPLOADING AN IMAGE')
             s3upload(image_id, image)
             cur_idx += 1
 
@@ -117,9 +118,11 @@ def manage_patient(patient_id):
     if request.method == 'POST':
         if 'id' in request.form:
             app.logger.info('Deleting collection with id {}'.format(request.form['id']))
+            image_ids = []
             for image in db.execute('select i.iid from images i where cid = ?',
                 (request.form['id'],)):
-                s3delete(image['IID'])
+                image_ids.append(image['IID'])
+            s3delete(image_ids)
 
             db.execute('delete from collections where cid = ?', (request.form['id'],))
         else:
@@ -148,10 +151,12 @@ def manage():
     if request.method == 'POST':
         if 'id' in request.form:
             app.logger.info('Deleting patient with id {}'.format(request.form['id']))
+            image_ids = []
             for image in db.execute('select i.iid from images i \
                 join collections c on c.cid = i.cid where c.pid = ?',
                 (request.form['id'],)):
-                s3delete(image['IID'])
+                image_ids.append(image['IID'])
+            s3delete(image_ids)
 
             db.execute('delete from patients where pid = ?', (request.form['id'],))
 
