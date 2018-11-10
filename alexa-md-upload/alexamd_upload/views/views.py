@@ -4,6 +4,7 @@ from s3utils import s3upload, s3delete
 import uuid
 import png
 import numpy as np
+import numpngw
 import pydicom
 
 def get_context():
@@ -65,7 +66,13 @@ def upload(patient_id):
 
         # TODO: add progress bar to show how many images are processed
         for file in request.files.getlist('files'):
-            image_id = str(uuid.uuid1())
+            # image_id = str(uuid.uuid1())
+            
+            # file_name = file.filename.split(".")[0]
+            image_id = file.filename.split(".")[0]
+            file_name = image_id + '.png'
+            print('[DEBUGGING] image_id is {}, file is {}, filename is {}'.format(image_id, file, file_name))
+            
             db.execute('insert into images(iid, cid, ind) values (?,?,?)',
                        (image_id, collection_id, cur_idx))
 
@@ -91,9 +98,12 @@ def upload(patient_id):
             # Convert to uint
             image_2d_scaled = np.uint8(image_2d_scaled)
             image = png.from_array(image_2d_scaled, 'L')
+            
+            numpngw.write_png(file_name, image_2d_scaled)
+            print('[DEBUGGING 2] NOW id is: {}'.format(str(uuid.uuid1())))
 
             # upload image object
-            print('ANTHONY IS UPLOADING AN IMAGE')
+            print('ANTHONY IS UPLOADING IMAGE {} with ID {}'.format(image, image_id))
             s3upload(image_id, image)
             cur_idx += 1
 

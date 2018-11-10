@@ -1,6 +1,8 @@
 from boto.s3.connection import S3Connection
 import boto3
 from alexamd_upload import model
+from io import BytesIO
+from PIL import Image
 
 
 def s3validate():
@@ -37,17 +39,35 @@ def s3upload(id, file):
     file is a PNG.Image object. (This may need to be changed.)
     """
 
+    # id += '.png'
     print('Uploading {} to S3 as {}.'.format(file, id))
     # s3 = boto3.client('s3')
     # s3.upload_file(file, 'alexa-md-495', id)
+
+    #f = BytesIO()
+    #print('F IS: {}'.format(f))
+    #file.save(f, "PNG")
+    
+    print('FILE TYPE IS: {}'.format(type(file)))
+    # pil_img = file.save("PNG")
+    #pil_img = file.read()
+    #pil_img = Image.open(file)
+    #print('pil_img size IS: {}'.format(pil_img.size))
+    #im.save(file, "PNG")
+    #in_mem_file = BytesIO()
+
+    #file.save(in_mem_file, "PNG")
     
     s3 = boto3.resource('s3')
-    s3.Bucket('alexa-md-495').upload_file(file, id)
+    filename = id + '.png'
+    s3.Bucket('alexa-md-495').upload_file(filename, id)
+    print('UPLOADED {} TO S3 BUCKET AS {}'.format(file, id))
+    # s3.Bucket('alexa-md-495').upload_fileobj(file, id)
 
 def s3delete(ids):
     """Remove file with name id from our S3 bucket."""
 
-    print('Removing {} from S3.'.format(id))
+    #print('Removing {} from S3.'.format(id))
     s3 = boto3.client('s3')
     response = s3.delete_object(
         Bucket='alexa-md-495',

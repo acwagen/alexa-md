@@ -13,7 +13,8 @@ setup(
         'boto3',
         'numpy',
         'pypng',
-        'pydicom'
+        'pydicom',
+        'numpngw'
     ],
     tests_require=[
         'bs4',
