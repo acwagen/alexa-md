@@ -3,6 +3,7 @@ import boto3
 from alexamd_upload import model
 from io import BytesIO
 from PIL import Image
+import os
 
 
 def s3validate():
@@ -39,30 +40,20 @@ def s3upload(id, file):
     file is a PNG.Image object. (This may need to be changed.)
     """
 
-    # id += '.png'
-    print('Uploading {} to S3 as {}.'.format(file, id))
-    # s3 = boto3.client('s3')
-    # s3.upload_file(file, 'alexa-md-495', id)
-
-    #f = BytesIO()
-    #print('F IS: {}'.format(f))
-    #file.save(f, "PNG")
-    
-    print('FILE TYPE IS: {}'.format(type(file)))
-    # pil_img = file.save("PNG")
-    #pil_img = file.read()
-    #pil_img = Image.open(file)
-    #print('pil_img size IS: {}'.format(pil_img.size))
-    #im.save(file, "PNG")
-    #in_mem_file = BytesIO()
-
-    #file.save(in_mem_file, "PNG")
+    filename = id + '.png'
+    print('Uploading {} to S3 as {}.'.format(file, filename))    
     
     s3 = boto3.resource('s3')
-    filename = id + '.png'
-    s3.Bucket('alexa-md-495').upload_file(filename, id)
-    print('UPLOADED {} TO S3 BUCKET AS {}'.format(file, id))
+    extra_s3_args = {
+        "ContentType": "image/png",
+        "ACL": "public-read"
+    }
+
+    s3.Bucket('alexa-md-495').upload_file(filename, filename, ExtraArgs=extra_s3_args)
     # s3.Bucket('alexa-md-495').upload_fileobj(file, id)
+
+    # gets rid of temp filename
+    os.remove(filename)
 
 def s3delete(ids):
     """Remove file with name id from our S3 bucket."""
