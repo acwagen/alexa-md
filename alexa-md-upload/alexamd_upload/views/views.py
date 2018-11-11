@@ -50,7 +50,7 @@ def upload(patient_id):
             app.logger.info('Creating new collection with name {}'.format(
                 request.form['new_collection']))
             db.execute('insert into collections(c_name, study, pid) values (?, ?, ?)',
-            (request.form['new_collection'], 'Other', session['patient_id']))
+            (request.form['new_collection'], 'Other', patient_id))
 
             collection_id = db.execute('select max(cid) as new_cid from collections'
                 ).fetchone()['new_cid']
@@ -72,7 +72,7 @@ def upload(patient_id):
             file_name = image_id + '.png'
 
             print('[DEBUGGING] image_id is {}, file is {}, filename is {}'.format(image_id, file, file_name))
-            
+
             db.execute('insert into images(iid, cid, ind) values (?,?,?)',
                        (image_id, collection_id, cur_idx))
 
@@ -98,7 +98,7 @@ def upload(patient_id):
             # Convert to uint
             image_2d_scaled = np.uint8(image_2d_scaled)
             image = png.from_array(image_2d_scaled, 'L')
-            
+
             # Create temp png file to push to S3. Gets deleted in s3upload
             numpngw.write_png(file_name, image_2d_scaled)
 
@@ -114,7 +114,7 @@ def upload(patient_id):
     context['collections'] = []
 
     for collection in db.execute('select cid, c_name, study from collections where pid = ?',
-                                 (session['patient_id'],)):
+                                 (patient_id,)):
         context['collections'].append({'id': collection['CID'], 'name': collection['C_Name']})
 
 
@@ -122,6 +122,8 @@ def upload(patient_id):
 
 @app.route('/patient/<int:patient_id>/manage/', methods=['GET', 'POST'])
 def manage_patient(patient_id):
+    # TODO: get rid of session['patient_id'] altogether and just
+    # get patient_id from the url
     db = model.get_db()
 
     if request.method == 'POST':
@@ -137,19 +139,19 @@ def manage_patient(patient_id):
         else:
             app.logger.info('Creating new collection with name {}'.format(request.form['name']))
             db.execute('insert into collections(c_name, study, pid) values (?, ?, ?)',
-                       (request.form['name'], 'Other', session['patient_id']))
+                       (request.form['name'], 'Other', patient_id))
 
     context = get_context()
 
     context['items'] = []
     for collection in db.execute('select c.cid, c.c_name, c.study \
          from collections c where c.pid = ?',
-                                 (session['patient_id'],)):
+                                 (patient_id,)):
         # this might be able to be combined into the above query
         count = db.execute('select count(*) as count from images where cid = ?',
             (collection['CID'],)).fetchone()['count']
         context['items'].append({'id': collection['CID'],
-            'name': '{} ({} images)'.format(collection['C_Name'], count) })
+            'name': '{} ({} {})'.format(collection['C_Name'], count, 'images' if count != 1 else 'image') })
 
     return render_template('manage.html', **context)
 
@@ -184,6 +186,6 @@ def manage():
 
     for patient in db.execute('select pid, p_first, p_last from patients'):
         context['items'].append({'id': patient['PID'],
-            'name': '{} {}'.format(patient['P_First'], patient['P_Last'])})
+            'name': '{}, {}'.format(patient['P_Last'], patient['P_First'])})
 
     return render_template('manage.html', **context)

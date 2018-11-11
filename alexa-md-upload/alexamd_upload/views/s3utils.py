@@ -2,7 +2,7 @@ from boto.s3.connection import S3Connection
 import boto3
 from alexamd_upload import model
 from io import BytesIO
-from PIL import Image
+# from PIL import Image
 import os
 
 
@@ -41,8 +41,8 @@ def s3upload(id, file):
     """
 
     filename = id + '.png'
-    print('Uploading {} to S3 as {}.'.format(file, filename))    
-    
+    print('Uploading {} to S3 as {}.'.format(file, filename))
+
     s3 = boto3.resource('s3')
     extra_s3_args = {
         "ContentType": "image/png",
