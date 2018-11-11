@@ -47,8 +47,73 @@ def display_text_items(names):
         res.append(item)
     return res
 
+#-----------------------------------------------------------------------------
+# The functions below are SQL execution that will be used in the intents
+
+# Return the names of studys that this patient has.
+# Used in Patient Page
+ #return list of tuples (CID, study)
+def FetchPatientsInfo(PID):
+   
+    db = get_db()
+    cur = db.execute('select CID,Study from Collections where PID = ?', (PID,))
+    res = []
+    for row in cur.fetchall():
+        res.append([row['CID'], row['Study']])
+    return res
+
+# Return the IID of all the first image in a study
+# Used in collections page
+def FetchFirstImagesList(CIDS):
+    db = get_db()
+    Image_names = []
+    for cid in CIDS:
+        row = db.execute('select IID from Images i where i.IND=0 and i.CID =?', (cid,)).fetechone()
+        if row != None:
+            Image_names.append(row[IID])
+    return Image_names
+
+# Return the IID next or prev
+# if return result is None, the index is outofbound
+def FetchScroll(CID, nextIndex):
+    db = get_db()
+    row = db.execute('select IID from Images where CID = ? and IND = ?',(CID,nextIndex,)).fetechone()
+    if row== None:
+        return None
+    else:
+        return row['IID']
+
+#return the PID of the Patinet if Patient's First name is unique
+def FetchPatientByFirstName(name):
+    # if return None, there is no such patient
+    # if return Duplicate, there is more than one patient with the same name
+    db = get_db()
+    cur = db.execute('select PID from Patients where P_First = ?', (name,)).fetchall()
+    if len(cur) == 0:
+        return None
+    elif len(cur) > 1:
+        return 'duplicate'
+    else:
+        return cur[PID]
 
 
+#-----------------------------------------------------------------------------
+# S3 utility functions
+def GetImageURL(image_name):
+    # assume that image_name.jpg must exist in the S3 bucket
+    s3 = boto.client('s3')
+    image_name = image_name +".jpg"
+    image_name = image_name.lower()
+    s3.head_object(Bucket='alexa-md-495', Key=image_name)
+    url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':image_name,})
+    return url.split('?')[0]
+#------------------------------------------------------------------------------
+
+    
+
+
+
+# fucntions to implement the skills.
 
 def open_response(msg, filename):
     s3 = boto3.client('s3')
@@ -176,7 +241,7 @@ def open(imageName):
 
     elif session['level'] == 'study':
     
-    elif session['level'] == image:
+    elif session['level'] == 'image':
     
     else:
         exit(1)
