@@ -91,7 +91,7 @@ def FetchFirstImagesList(CIDS):
     db = get_db()
     Image_infos= []
     for cid in CIDS:
-        row = db.execute('select IID from Images i where i.IND=0 and i.CID =?', (cid,)).fetechone()
+        row = db.execute('select IID from Images i where i.IND=0 and i.CID =?', (cid,)).fetchone()
         if row != None:
             Image_infos.append(row['IID'],cid)
     return Image_infos
@@ -100,7 +100,7 @@ def FetchFirstImagesList(CIDS):
 # if return result is None, the index is outofbound
 def FetchScroll(CID, nextIndex):
     db = get_db()
-    row = db.execute('select IID from Images where CID = ? and IND = ?',(CID,nextIndex,)).fetechone()
+    row = db.execute('select IID from Images where CID = ? and IND = ?',(CID,nextIndex,)).fetchone()
     if row== None:
         return None
     else:
@@ -119,6 +119,10 @@ def FetchPatientByFirstName(name):
     else:
         return cur['PID']
 
+def FetchStudyByID(CID):
+    db = get_db()
+    cur = db.execute('select Study from Collections where CID=?', (CID,)).fetchall()
+    return cur['Study']
 
 def FetchCollectionNameByID(CID):
     db = get_db()
@@ -188,6 +192,14 @@ def NavigateToFirstImage(CID):
     IID = FetchFirstImageInCollection(CID)
     url = GetImageURL(IID)[0]
     msg = 'open '+IID
+    return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
+
+def NavigateToImage(CID, Index, help_msg = None):
+    IID = FetchScroll(CID, Index)
+    url = GetImageURL(IID)[0]
+    msg = 'open '+IID
+    if help_msg != None:
+        msg = help_msg
     return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
  #---------------------------------------------------------------------   
 
@@ -335,11 +347,11 @@ def open(imageName):
                 return NavigateToPatient(session['patient'])
    
     elif session['level'] == 'patient':
-        # study should only be a string
+        # if not string, filename = cid. if string, filename = study
         if useID:
-            # TODO(query by CID)
-            msg = "the name of study should only be str"
-            return question(msg)
+            session['study'] = FetchStudyByID(filename)
+            session['level'] = 'study'
+            return NavigateToStudy(session['patient'],session['study'])
         else:
             session['study'] = filename
             session['level'] = 'study'
@@ -360,7 +372,8 @@ def open(imageName):
         msg = "You should not call open in this stage, try another command"
         return question(msg)
     else:
-        #should not happen
+        # should not happen
+        print("this should not happen")
         print(session['level'])
         exit(1)
 
@@ -374,74 +387,86 @@ def open(imageName):
 
     # return open_response(open_msg, filename)
 
+# TODO: create return intent in alexa developer console
+@ask.intent("ReturnIntent")
+def returndir():
+    if session['level']=='home' || session['level'] == 'patient':
+        # goes back to home level and resets patient
+        session['level'] = 'home'
+        session['patient'] = None
+
+        # displays list of patients
+        return launch()
+        
+    elif session['level'] == 'study':
+        # goes back one session level and resets study
+        session['level'] = 'patient'
+        session['study'] = None
+
+        # displays studies of current patient
+        return NavigateToPatient(session['patient'])
+
+    elif session['level'] == 'image':
+        # goes back one session level and resets collection
+        session['level'] = 'study'
+        session['collection'] = None
+
+        # display collections of current study of current patient
+        return NavigateToStudy(session['patient'],session['study'])
+
+    else:
+        # should not happen
+        print("this should not happen")
+        print(session['level'])
+        exit(1)
+
 
 @ask.intent("NextIntent", mapping={'number': 'number'})
 def next(number):
-    if session.attributes['curr_index'] == -1:
-        return help()
-    
-    last_index = len(my_list) - 1
-
-    if not number:
-        number = 1
+    # get nextIndex
+    session['index'] += int(number)
+    if item == None:
+        help_msg = "Moving " + str(number) " spaces forward went out of bounds. Can't go next"
+        session['index'] -= int(number)
+        return NavigateToImage(session['collection'], session['index'], help_msg)
     else:
-        number = int(number)
-    
-    if session.attributes['curr_index'] == last_index:
-        help_msg = "Cannot go next. You're already at the end."
-        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
-        return open_response(help_msg, image_name)
-
-    return scroll(number)
-
+        return NavigateToImage(session['collection'], session['index'])
 
 @ask.intent("AMAZON.NextIntent")
 def nextOne():
-    if session.attributes['curr_index'] == -1:
-        return help()
-
-
-    last_index = len(my_list) - 1
-    
-    if session.attributes['curr_index'] == last_index:
-        help_msg = "Cannot go next. You're already at the end."
-        image_name = my_list[last_index]["textContent"]["primaryText"]["text"]
-        return open_response(help_msg, image_name)
-    
-    return scroll(1)
+    # get nextIndex
+    session['index'] += 1
+    if item == None:
+        help_msg = "Moving 1 space forward went out of bounds. Can't go next"
+        session['index'] -= 1
+        return NavigateToImage(session['collection'], session['index'], help_msg)
+    else:
+        return NavigateToImage(session['collection'], session['index'])
 
 
 @ask.intent("PreviousIntent", mapping={'number': 'number'})
 def previous(number):
-    if session.attributes['curr_index'] == -1:
-        return help()
-    
-    last_index = len(my_list) - 1
-
-    if not number:
-        number = -1
+    # get nextIndex
+    session['index'] -= int(number)
+    if item == None:
+        help_msg = "Moving " + str(number) " spaces backward went out of bounds. Can't go to previous"
+        session['index'] += int(number)
+        return NavigateToImage(session['collection'], session['index'], help_msg)
     else:
-        number = int(number) * -1
-    
-    if session.attributes['curr_index'] == 0:
-        help_msg = "Cannot go previous. You're already at the front."
-        image_name = my_list[0]["textContent"]["primaryText"]["text"]
-        return open_response(help_msg, image_name)
-
-    return scroll(number)
+        return NavigateToImage(session['collection'], session['index'])
 
 
 @ask.intent("AMAZON.PreviousIntent")
 def previousOne():
-    if session.attributes['curr_index'] == -1:
-        return help()
-    
-    if session.attributes['curr_index'] == 0:
-        help_msg = "Cannot go previous. You're already at the front."
-        image_name = my_list[0]["textContent"]["primaryText"]["text"]
-        return open_response(help_msg, image_name)
-
-    return scroll(-1)
+    # get nextIndex
+    session['index'] -= 1
+    item = FetchScroll(session['collection'], session['index'])
+    if item == None:
+        help_msg = "Moving 1 space backward went out of bounds. Can't go to previous"
+        session['index'] += 1
+        return NavigateToImage(session['collection'], session['index'], help_msg)
+    else:
+        return NavigateToImage(session['collection'], session['index'])
 
 
 @ask.intent("AdjustScreenIntent")
