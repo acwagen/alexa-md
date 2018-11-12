@@ -1,5 +1,5 @@
 from alexamd import app, ask
-from flask import Flask, render_template
+from flask import Flask, render_template,g
 from flask_ask import Ask, statement, question, session
 from jinja2 import Template
 from boto.s3.connection import S3Connection
@@ -11,7 +11,7 @@ import sqlite3
 conn = sqlite3.connect('alexamd.db')
 
 # global variables
-
+#----------helper functions--------------------------------------------------
 def get_db():
     if not hasattr(flask.g, 'sqlite_db'):
         flask.g.sqlite_db = sqlite3.connect(
@@ -47,6 +47,29 @@ def display_text_items(names):
         res.append(item)
     return res
 
+def disply_image_item(url, display_text):
+    item = {
+    "token": "List-Item-0",
+    "image": {
+        "contentDescription": "XYZ 1",
+        "sources": [
+            {
+            "url": url
+                }
+            ]
+        },
+        "textContent": {
+            "primaryText": {
+                "text": display_text,
+                "type": "RichText"
+            },
+            "secondaryText": None,
+            "tertiaryText": None
+        }
+    }
+    return item;
+
+
 #-----------------------------------------------------------------------------
 # The functions below are SQL execution that will be used in the intents
 
@@ -66,12 +89,12 @@ def FetchPatientsInfo(PID):
 # Used in collections page
 def FetchFirstImagesList(CIDS):
     db = get_db()
-    Image_names = []
+    Image_infos= []
     for cid in CIDS:
         row = db.execute('select IID from Images i where i.IND=0 and i.CID =?', (cid,)).fetechone()
         if row != None:
-            Image_names.append(row[IID])
-    return Image_names
+            Image_infos.append(row['IID'],cid)
+    return Image_infos
 
 # Return the IID next or prev
 # if return result is None, the index is outofbound
@@ -94,25 +117,81 @@ def FetchPatientByFirstName(name):
     elif len(cur) > 1:
         return 'duplicate'
     else:
-        return cur[PID]
+        return cur['PID']
+
+
+def FetchCollectionNameByID(CID):
+    db = get_db()
+    cur = db.execute('select C_Name from Collections where CID=?',(CID,)).fetchall()
+    return cur['C_Name']
+
+def FetchCollectionID(PID,C_name,study):
+    db = get_db()
+    cur = db.execute('select CID from Collections where PID=? and C_name=? and Study=?',(PID,C_name,study)).fetchall()
+    if (len(cur))==0:
+        return None
+    elif len(cur) > 1:
+        return 'duplicate'
+    else:
+        return cur['CID']
+
+def FetchFirstImageInCollection(CID):
+    db = get_db()
+    cur = db.execute('select IID from Collections where IND = 0 and CID=?',(CID,)).fetchall()
+    return cur['IID']
 
 
 #-----------------------------------------------------------------------------
 # S3 utility functions
 def GetImageURL(image_name):
     # assume that image_name.jpg must exist in the S3 bucket
-    s3 = boto.client('s3')
+    s3 = boto3.client('s3')
     image_name = image_name +".jpg"
     image_name = image_name.lower()
     s3.head_object(Bucket='alexa-md-495', Key=image_name)
     url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':image_name,})
-    return url.split('?')[0]
+    return [url.split('?')[0],image_name]
 #------------------------------------------------------------------------------
-
+#Navigate Functions
+def NavigateToPatient(PID):
+    
+    patient_infos = FetchPatientsInfo(PID)
+    display_texts = []
+    for info in patient_infos:
+        display_texts.append(info[0]+"_"+info[1])
+ 
+    msg = 'open patient page'
+    return question(msg).list_display_render(title='Patient Page', template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1')
     
 
+def NavigateToStudy(PID, study):
+    patient_infos = FetchPatientsInfo(PID)
+    CIDS = []
+    for info in patient_infos:
+        if info[1]==study:
+            CIDS.append(info[0])
+    if len(CIDS)==0:
+        msg = 'This patient has no '+ study
+        return question(msg)
+    image_infos = FetchFirstImagesList(CIDS)
+    display_items = []
+    for info in image_infos:
+        url = GetImageURL(info[0])[0] #url
+        c_name = FetchCollectionNameByID(info[1])
+        c_name = c_name +" "+ str(info[1])
+        display_items.append(disply_image_item(url,c_name))
+    msg = 'Open study page'
+    return question(msg).list_display_render(title='study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
 
 
+def NavigateToFirstImage(CID):
+    IID = FetchFirstImageInCollection(CID)
+    url = GetImageURL(IID)[0]
+    msg = 'open '+IID
+    return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
+ #---------------------------------------------------------------------   
+
+    
 # fucntions to implement the skills.
 
 def open_response(msg, filename):
@@ -210,7 +289,7 @@ def launch():
     patent_info = cur.fetchall()
     patient_names = []
     for row in patent_info:
-        patient_names.append("Patient: "+row['PID'])
+        patient_names.append("Patient: "+row['PID']+" "+row['P_First'])
 
     msg = render_template('welcome')
     session['level'] = 'home'
@@ -227,23 +306,62 @@ def start():
 
 @ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
 def open(imageName):
+    useID = True
     try:
         imageName = int(imageName)
         # it's a number
-        filename = str(my_list[imageName - 1]["textContent"]["primaryText"]["text"])
+        filename = str(imageName)
     except ValueError:
         # it's a string like 'Mike'
+        useID = False
         filename = str(imageName)
     if session['level']=='home':
         
-
+        if useID:
+            session['patient'] = filename # set the current Patient
+            session['level'] = 'patient'
+            return NavigateToPatient(session['patient'])
+        else:
+            PID = FetchPatientByFirstName(filename)
+            if PID == None:
+                msg = 'Please try another name'
+                return question(msg)
+            elif PID == 'duplicate':
+                msg = 'There are more than ' + filename + ' in the file system'
+                return question(msg)
+            else:
+                session['patient'] = PID
+                session['level'] = 'patient'
+                return NavigateToPatient(session['patient'])
+   
     elif session['level'] == 'patient':
-
+        # study should only be a string
+        if useID:
+            # TODO(query by CID)
+            msg = "the name of study should only be str"
+            return question(msg)
+        else:
+            session['study'] = filename
+            session['level'] = 'study'
+            return NavigateToStudy(session['patient'],session['study'])
     elif session['level'] == 'study':
-    
+        if useID:
+            session['collection'] = filename
+            session['index'] = 0
+            session['level'] = 'image'
+            return NavigateToFirstImage(session['collection'])
+        else:
+            CID = FetchCollectionID(session['patient'],filename,session['study'])
+            session['collection'] = CID
+            session['index'] = 0
+            session['level'] = 'image'
+            return NavigateToFirstImage(session['collection'])
     elif session['level'] == 'image':
-    
+        msg = "You should not call open in this stage, try another command"
+        return question(msg)
     else:
+        #should not happen
+        print(session['level'])
         exit(1)
 
     # open_msg = render_template('open', filename=filename)
