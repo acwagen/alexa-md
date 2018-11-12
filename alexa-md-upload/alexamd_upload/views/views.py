@@ -66,12 +66,9 @@ def upload(patient_id):
 
         # TODO: add progress bar to show how many images are processed
         for file in request.files.getlist('files'):
-            # image_id = str(uuid.uuid1())
-            # TODO will have to go back to above naming to ensure unique image ids
-            image_id = file.filename.split(".")[0]
-            file_name = image_id + '.png'
+            image_id = str(uuid.uuid1())
 
-            print('[DEBUGGING] image_id is {}, file is {}, filename is {}'.format(image_id, file, file_name))
+            print('[DEBUGGING] image_id is {}, file is {}'.format(image_id, file))
 
             db.execute('insert into images(iid, cid, ind) values (?,?,?)',
                        (image_id, collection_id, cur_idx))
@@ -97,13 +94,12 @@ def upload(patient_id):
 
             # Convert to uint
             image_2d_scaled = np.uint8(image_2d_scaled)
-            image = png.from_array(image_2d_scaled, 'L')
-
-            # Create temp png file to push to S3. Gets deleted in s3upload
-            numpngw.write_png(file_name, image_2d_scaled)
-
+            # TODO image below would use upload_fileobj in s3utils if we can figure that out
+            #image = png.from_array(image_2d_scaled, 'L')
+            
             # upload image object
-            s3upload(image_id, image)
+            #s3upload(image_id, image) # TODO would use upload_fileobj option in s3utils
+            s3upload(image_id, image_2d_scaled)
             cur_idx += 1
 
         if study != 'Other':

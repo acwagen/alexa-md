@@ -1,8 +1,9 @@
 from boto.s3.connection import S3Connection
 import boto3
 import alexamd_upload
-from io import BytesIO
+# from io import BytesIO
 # from PIL import Image
+import numpngw
 import os
 
 
@@ -39,10 +40,10 @@ def s3validate():
 def s3upload(id, file):
     """Upload a file to our S3 bucket with name id.
 
-    file is a PNG.Image object. (This may need to be changed.)
+    file is either a PNG.Image object or 2d scaled np image. (This may need to be changed.)
     """
 
-    filename = id + '.png'
+    filename = '{}.png'.format(id)
     print('Uploading {} to S3 as {}.'.format(file, filename))
 
     s3 = boto3.resource('s3')
@@ -51,10 +52,17 @@ def s3upload(id, file):
         "ACL": "public-read"
     }
 
-    s3.Bucket(S3_BUCKET).upload_file(filename, id, ExtraArgs=extra_s3_args)
-    # s3.Bucket(S3_BUCKET).upload_fileobj(file, id)
+    # write image object to temp png file
+    numpngw.write_png(filename, file)
 
-    # gets rid of temp filename
+    # pushes file to S3 bucket as .png file name
+    s3.Bucket(S3_BUCKET).upload_file(filename, filename, ExtraArgs=extra_s3_args)
+    
+    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Bucket.upload_fileobj
+    # "uploads a file like object in binary mode with at least read mode enabled"
+    #s3.Bucket(S3_BUCKET).upload_fileobj(file, id)
+
+    # gets rid of temp file from local directory
     os.remove(filename)
 
 def s3delete(ids):
@@ -82,7 +90,7 @@ def s3fetch(id):
     """Get url for file with name id from our S3 bucket."""
     s3 = boto3.client('s3')
 
-    filename = '{}.jpg'.format(id)
+    filename = '{}.png'.format(id)
 
     s3.head_object(Bucket=S3_BUCKET, Key=filename)
     url = s3.generate_presigned_url('get_object',Params={'Bucket':S3_BUCKET,'Key':filename,})
