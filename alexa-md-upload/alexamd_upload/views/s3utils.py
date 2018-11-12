@@ -1,17 +1,19 @@
 from boto.s3.connection import S3Connection
 import boto3
-from alexamd_upload import model
+import alexamd_upload
 from io import BytesIO
 # from PIL import Image
 import os
 
 
+S3_BUCKET = alexamd_upload.app.config['S3_BUCKET']
+
 def s3validate():
     """Compare contents of S3 bucket with database to detect inconsistencies."""
     s3 = boto3.client('s3')
-    resp = s3.list_objects_v2(Bucket='alexa-md-495')
+    resp = s3.list_objects_v2(Bucket=S3_BUCKET)
 
-    db = model.get_db()
+    db = alexamd_upload.model.get_db()
 
     count = db.execute('select count(*) as count from images').fetchone()['count']
     if len(resp['Contents']) != count:
@@ -49,27 +51,21 @@ def s3upload(id, file):
         "ACL": "public-read"
     }
 
-    s3.Bucket('alexa-md-495').upload_file(filename, filename, ExtraArgs=extra_s3_args)
-    # s3.Bucket('alexa-md-495').upload_fileobj(file, id)
+    s3.Bucket(S3_BUCKET).upload_file(filename, id, ExtraArgs=extra_s3_args)
+    # s3.Bucket(S3_BUCKET).upload_fileobj(file, id)
 
     # gets rid of temp filename
     os.remove(filename)
 
 def s3delete(ids):
-    """Remove file with name id from our S3 bucket."""
-
-    #print('Removing {} from S3.'.format(id))
-    s3 = boto3.client('s3')
-    response = s3.delete_object(
-        Bucket='alexa-md-495',
-        Key=id
-    )
+    """Remove files with names in ids list from our S3 bucket."""
 
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket('alexa-md-495')
-    # create Objects list thing
+    bucket = s3.Bucket(S3_BUCKET)
+
     images_to_delete = []
     for id in ids:
+        print('Removing {} from S3.'.format(id))
         images_to_delete.append({
             'Key': id
         })
@@ -79,7 +75,7 @@ def s3delete(ids):
             'Objects': images_to_delete
         },
     )
-    print('response: {}'.format(response))
+    print('Response: {}'.format(response))
 
 
 def s3fetch(id):
@@ -88,8 +84,8 @@ def s3fetch(id):
 
     filename = '{}.jpg'.format(id)
 
-    s3.head_object(Bucket='alexa-md-495', Key=filename)
-    url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':filename,})
+    s3.head_object(Bucket=S3_BUCKET, Key=filename)
+    url = s3.generate_presigned_url('get_object',Params={'Bucket':S3_BUCKET,'Key':filename,})
     base_url = url.split('?')[0]
 
     return base_url
