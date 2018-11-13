@@ -21,7 +21,6 @@ def index():
     db = model.get_db()
 
     if request.method == 'POST':
-        # TODO: session timeout
         session['patient_id'] = int(request.form['patient'])
 
         patient = db.execute('select p_first, p_last from patients where pid = ?',
@@ -70,10 +69,7 @@ def upload(patient_id):
 
             print('[DEBUGGING] image_id is {}, file is {}'.format(image_id, file))
 
-            db.execute('insert into images(iid, cid, ind) values (?,?,?)',
-                       (image_id, collection_id, cur_idx))
-
-            # convert dicom to jpeg. (based off of:
+            # convert dicom to png. (based off of:
             # https://github.com/pydicom/pydicom/issues/352#issuecomment-406767850)
             try:
                 ds = pydicom.dcmread(file)
@@ -85,6 +81,7 @@ def upload(patient_id):
                 study = ds.Modality
             elif study != ds.Modality:
                 flash('Error: Image {} has a different modality than selected sequence'.format(file.filename))
+                continue
 
             # Convert to float to avoid overflow or underflow losses.
             image_2d = ds.pixel_array.astype(float)
@@ -96,10 +93,14 @@ def upload(patient_id):
             image_2d_scaled = np.uint8(image_2d_scaled)
             # TODO image below would use upload_fileobj in s3utils if we can figure that out
             #image = png.from_array(image_2d_scaled, 'L')
-            
+
             # upload image object
             #s3upload(image_id, image) # TODO would use upload_fileobj option in s3utils
             s3upload(image_id, image_2d_scaled)
+
+            # insert into database once everything else has succeeded
+            db.execute('insert into images(iid, cid, ind) values (?,?,?)',
+                       (image_id, collection_id, cur_idx))
             cur_idx += 1
 
         if study != 'Other':
