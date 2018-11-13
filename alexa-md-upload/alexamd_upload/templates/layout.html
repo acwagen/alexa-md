@@ -10,9 +10,12 @@
 	<span style="float:right;">Patient: {{ patient_name }}</span>
 {% endif %}
 </p>
-<link href="https://mattduck.github.io/generic-css/css/generic-dark.min.css" rel="stylesheet" type="text/css">
+<link href="https://mattduck.github.io/generic-css/css/generic-{{theme}}.min.css" rel="stylesheet" type="text/css">
 </header>
 <body>
 {% block content %}{% endblock %}
 </body>
+<footer>
+	<a href="/settings/">Settings</a>
+</footer>
 </html>

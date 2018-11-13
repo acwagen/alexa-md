@@ -8,7 +8,7 @@ import numpngw
 import pydicom
 
 def get_context():
-    context = {}
+    context = { 'theme': session['theme'] if 'theme' in session else 'dark' }
 
     if 'patient_id' in session and 'patient_name' in session:
         context['patient_id'] = session['patient_id']
@@ -186,3 +186,10 @@ def manage():
             'name': '{}, {}'.format(patient['P_Last'], patient['P_First'])})
 
     return render_template('manage.html', **context)
+
+@app.route('/settings/', methods=['GET', 'POST'])
+def settings():
+    if request.method == 'POST':
+        session['theme'] = request.form['theme']
+
+    return render_template('settings.html', **get_context())
