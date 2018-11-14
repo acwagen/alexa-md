@@ -1,5 +1,5 @@
 from alexamd import app, ask
-from flask import Flask, render_template,g
+import flask
 from flask_ask import Ask, statement, question, session
 from jinja2 import Template
 from boto.s3.connection import S3Connection
@@ -150,7 +150,8 @@ def FetchFirstImageInCollection(CID):
 def GetImageURL(image_name):
     # assume that image_name.jpg must exist in the S3 bucket
     s3 = boto3.client('s3')
-    image_name = image_name +".jpg"
+    # image_name = image_name +".jpg"  
+    # don't need to manual add extention
     image_name = image_name.lower()
     s3.head_object(Bucket='alexa-md-495', Key=image_name)
     url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':image_name,})
