@@ -74,34 +74,40 @@ def upload(patient_id):
             try:
                 ds = pydicom.dcmread(file)
             except pydicom.errors.InvalidDicomError:
-                flash('Error: Invalid dicom: {}'.format(file.filename))
+                flash('Error: Invalid dicom: {}'.format(file.filename), 'error')
                 continue
 
             if study == 'Other':
                 study = ds.Modality
             elif study != ds.Modality:
-                flash('Error: Image {} has a different modality than selected sequence'.format(file.filename))
+                flash('Error: Image {} has a different modality than selected sequence'.format(file.filename), 'error')
                 continue
 
-            # Convert to float to avoid overflow or underflow losses.
-            image_2d = ds.pixel_array.astype(float)
+            try:
+                # Convert to float to avoid overflow or underflow losses.
+                image_2d = ds.pixel_array.astype(float)
 
-            # Rescaling grey scale between 0-255
-            image_2d_scaled = (np.maximum(image_2d,0) / image_2d.max()) * 255.0
+                # Rescaling grey scale between 0-255
+                image_2d_scaled = (np.maximum(image_2d,0) / image_2d.max()) * 255.0
 
-            # Convert to uint
-            image_2d_scaled = np.uint8(image_2d_scaled)
-            # TODO image below would use upload_fileobj in s3utils if we can figure that out
-            #image = png.from_array(image_2d_scaled, 'L')
+                # Convert to uint
+                image_2d_scaled = np.uint8(image_2d_scaled)
+                # TODO image below would use upload_fileobj in s3utils if we can figure that out
+                #image = png.from_array(image_2d_scaled, 'L')
 
-            # upload image object
-            #s3upload(image_id, image) # TODO would use upload_fileobj option in s3utils
-            s3upload(image_id, image_2d_scaled)
+                # upload image object
+                #s3upload(image_id, image) # TODO would use upload_fileobj option in s3utils
+                s3upload(image_id, image_2d_scaled)
 
-            # insert into database once everything else has succeeded
-            db.execute('insert into images(iid, cid, ind) values (?,?,?)',
-                       (image_id, collection_id, cur_idx))
-            cur_idx += 1
+                # insert into database once everything else has succeeded
+                db.execute('insert into images(iid, cid, ind) values (?,?,?)',
+                           (image_id, collection_id, cur_idx))
+                cur_idx += 1
+
+            except NotImplementedError:
+                flash('Error converting image {}'.format(file.filename), 'error')
+            except RuntimeError:
+                flash('Error converting image {}'.format(file.filename), 'error')
 
         if study != 'Other':
             db.execute('update collections set study = ? where cid = ?',
@@ -173,9 +179,17 @@ def manage():
                 session.pop('patient_name')
         else:
             app.logger.info('Adding patient with name {}'.format(request.form['name']))
+
+            # TODO: either change this to just read patient names from dicoms
+            # directly or make the form have separate fields for first and last
             name = request.form['name'].split()
+            first_name = name[0]
+            last_name = ''
+            if len(name) > 1:
+                last_name = name[1]
+
             db.execute('insert into patients(p_first, p_last) values (?, ?)',
-                       (name[0], name[1],))
+                       (first_name, last_name,))
 
 
     context = get_context()
