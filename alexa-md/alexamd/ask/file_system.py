@@ -361,6 +361,7 @@ def returndir():
 def next(number):
     # get nextIndex
     session.attributes['index'] += int(number)
+    item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
         help_msg = 'Moving ' + str(number)+" spaces forward went out of bounds. Can't go next"
         session.attributes['index'] -= int(number)
@@ -372,6 +373,7 @@ def next(number):
 def nextOne():
     # get nextIndex
     session.attributes['index'] += 1
+    item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
         help_msg = "Moving 1 space forward went out of bounds. Can't go next"
         session.attributes['index'] -= 1
@@ -384,6 +386,7 @@ def nextOne():
 def previous(number):
     # get nextIndex
     session.attributes['index'] -= int(number)
+    item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
         help_msg = "Moving " + str(number)+" spaces backward went out of bounds. Can't go to previous"
         session.attributes['index'] += int(number)

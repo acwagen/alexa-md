@@ -23,4 +23,4 @@ INSERT INTO Images(IID,CID,IND) VALUES
 ("derek2.jpeg",6,0),
 ("mike1.jpg",7,0),
 ("mike2.jpg",8,0),
-("alyssa3.jpeg",1,1);
+("alyssa3.jpg",1,1);
