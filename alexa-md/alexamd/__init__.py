@@ -5,6 +5,7 @@ import flask_ask
 # app is a single object used by all the code modules in this package
 app = flask.Flask(__name__)
 ask = flask_ask.Ask(app, "/")
+app.secret_key = 'super secret key'
 
 logging.getLogger("flask_ask").setLevel(logging.DEBUG)
 
