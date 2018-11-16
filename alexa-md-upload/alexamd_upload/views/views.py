@@ -6,7 +6,7 @@ import png
 import numpy as np
 import numpngw
 import pydicom
-
+import io
 def get_context():
     context = { 'theme': session['theme'] if 'theme' in session else 'dark' }
 
@@ -92,12 +92,16 @@ def upload(patient_id):
 
                 # Convert to uint
                 image_2d_scaled = np.uint8(image_2d_scaled)
-                # TODO image below would use upload_fileobj in s3utils if we can figure that out
-                #image = png.from_array(image_2d_scaled, 'L')
 
-                # upload image object
-                #s3upload(image_id, image) # TODO would use upload_fileobj option in s3utils
-                s3upload(image_id, image_2d_scaled)
+                image = png.from_array(image_2d_scaled, 'L')
+
+                # save image in memory and upload to s3
+                with io.BytesIO() as image_data:
+                    image.save(image_data)
+                    image_data.seek(0)
+
+                    # upload image object
+                    s3upload(image_id, image_data)
 
                 # insert into database once everything else has succeeded
                 db.execute('insert into images(iid, cid, ind) values (?,?,?)',

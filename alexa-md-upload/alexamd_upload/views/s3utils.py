@@ -40,11 +40,10 @@ def s3validate():
 def s3upload(id, file):
     """Upload a file to our S3 bucket with name id.
 
-    file is either a PNG.Image object or 2d scaled np image. (This may need to be changed.)
+    file is a readable BytesIO object.)
     """
 
     filename = '{}.png'.format(id)
-    print('Uploading {} to S3 as {}.'.format(file, filename))
 
     s3 = boto3.resource('s3')
     extra_s3_args = {
@@ -52,18 +51,8 @@ def s3upload(id, file):
         "ACL": "public-read"
     }
 
-    # write image object to temp png file
-    numpngw.write_png(filename, file)
+    s3.Bucket(S3_BUCKET).upload_fileobj(file, filename, ExtraArgs=extra_s3_args)
 
-    # pushes file to S3 bucket as .png file name
-    s3.Bucket(S3_BUCKET).upload_file(filename, filename, ExtraArgs=extra_s3_args)
-    
-    # https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3.html#S3.Bucket.upload_fileobj
-    # "uploads a file like object in binary mode with at least read mode enabled"
-    #s3.Bucket(S3_BUCKET).upload_fileobj(file, id)
-
-    # gets rid of temp file from local directory
-    os.remove(filename)
 
 def s3delete(ids):
     """Remove files with names in ids list from our S3 bucket."""
@@ -75,7 +64,7 @@ def s3delete(ids):
     for id in ids:
         print('Removing {} from S3.'.format(id))
         images_to_delete.append({
-            'Key': id
+            'Key': '{}.png'.format(id)
         })
 
     response = bucket.delete_objects(
