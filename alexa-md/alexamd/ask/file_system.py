@@ -127,10 +127,6 @@ def FetchPatientByFirstName(name):
     else:
         return cur['PID']
 
-def FetchStudyByID(CID):
-    db = get_db()
-    cur = db.execute('select Study from Collections where CID=?', (CID,)).fetchone()
-    return cur['Study']
 
 def FetchCollectionNameByID(CID):
     db = get_db()
@@ -170,7 +166,11 @@ def NavigateToPatient(PID):
     
     patient_infos = FetchPatientsInfo(PID)
     display_texts = []
+    all_studies = set()
     for info in patient_infos:
+        if info[1] in all_studies:
+            continue
+        all_studies.add(info[1])
         display_texts.append(str(info[0])+"_"+str(info[1]))
  
     msg = 'open patient page'
@@ -212,7 +212,39 @@ def NavigateToImage(CID, Index, help_msg = None):
     return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
  #---------------------------------------------------------------------   
 
+#functions that transfer Display ID into PID, CID   
+
+def GetPidFromDisplayID(display_id):
+    db = get_db()
+    cur = db.execute('select * from Patients')
+    patent_info = cur.fetchall()
+
+    if display_id >= len(patent_info):
+        return None
+    else:
+        return str(patent_info[display_id]['PID'])
     
+def GetStudyFromDisplayID(display_id, PID):
+    patient_infos = FetchPatientsInfo(PID)
+    if display_id >= len(patient_infos):
+        return None
+    else:
+        return patient_infos[display_id][1]
+    
+def GetCidFromDisplayID(display_id, PID, study):
+    patient_infos = FetchPatientsInfo(PID)
+    CIDS = []
+    for info in patient_infos:
+        if info[1]==study:
+            CIDS.append(info[0])
+    if len(CIDS)==0:
+        return None
+    image_infos = FetchFirstImagesList(CIDS)
+    if display_id >= len(image_infos):
+        return None
+    return str(image_infos[display_id][1])
+
+
 # fucntions to implement the skills.
 
 def open_response(msg, filename):
@@ -273,7 +305,13 @@ def open(imageName):
     if session.attributes['level']=='home':
         
         if useID:
-            session.attributes['patient'] = filename # set the current Patient
+            
+            display_id = int(filename)-1
+            pid = GetPidFromDisplayID(display_id)
+            if pid == None:
+                return question('out of bound, please retry')
+            print('PID is ' + pid)
+            session.attributes['patient'] = pid # set the current Patient
             session.attributes['level'] = 'patient'
             return NavigateToPatient(session.attributes['patient'])
         else:
@@ -292,7 +330,13 @@ def open(imageName):
     elif session.attributes['level'] == 'patient':
         # if not string, filename = cid. if string, filename = study
         if useID:
-            session.attributes['study'] = FetchStudyByID(filename)
+            display_id = int(filename)-1
+            study = GetStudyFromDisplayID(display_id,session.attributes['patient'])
+            if study == None:
+                return question('out of bound, please retry')
+
+            print('Study is ' + study)
+            session.attributes['study'] = study
             session.attributes['level'] = 'study'
             return NavigateToStudy(session.attributes['patient'],session.attributes['study'])
         else:
@@ -301,7 +345,12 @@ def open(imageName):
             return NavigateToStudy(session.attributes['patient'],session.attributes['study'])
     elif session.attributes['level'] == 'study':
         if useID:
-            session.attributes['collection'] = filename
+            display_id = int(filename)-1
+            CID = GetCidFromDisplayID(display_id,session.attributes['patient'],session.attributes['study'])
+            if CID == None:
+                return question('out of bound, please retry')
+            print('CID is '+CID)
+            session.attributes['collection'] = CID
             session.attributes['index'] = 0
             session.attributes['level'] = 'image'
             return NavigateToFirstImage(session.attributes['collection'])
