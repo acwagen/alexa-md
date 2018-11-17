@@ -81,6 +81,15 @@ In a separate terminal, start the ngrok server with
 
 Copy the url from the ngrok output and enter it as the skill's endpoint in the developer console as described above.
 
+## Testing
+
+After installation, run unit tests for each subproject with 
+
+```
+cd $subproject_folder
+python setup.py test
+```
+
 ## Alexa MD User Guide
 To start the system, say 'File System'.<br/>
 To view a certain image, say 'Open {imagename}' or 'Open {imageindex}.<br/>

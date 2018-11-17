@@ -12,7 +12,10 @@ setup(
         'flask_ask',
         'boto',
         'boto3',
-        'pyOpenSSL==18.0.0',
+        'pyOpenSSL'
+    ],
+    tests_require=[
         'requests'
     ],
+    test_suite='alexamd.tests'
 )
