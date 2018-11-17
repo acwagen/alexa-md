@@ -101,8 +101,7 @@
                 },
                 {
                     "name": "AMAZON.ScrollRightIntent",
-                    "samples": [
-                    ]
+                    "samples": []
                 },
                 {
                     "name": "AMAZON.ScrollDownIntent",
@@ -115,6 +114,13 @@
                 {
                     "name": "AMAZON.ScrollUpIntent",
                     "samples": []
+                },
+                {
+                    "name": "ReturnIntent",
+                    "slots": [],
+                    "samples": [
+                        "return"
+                    ]
                 }
             ],
             "types": []
