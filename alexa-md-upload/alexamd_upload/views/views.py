@@ -59,7 +59,7 @@ def upload(patient_id):
         study = db.execute('select study from collections where cid = ?',
                            (collection_id,)).fetchone()['Study']
         cur_idx = db.execute('select max(ind) as start_idx from images where cid = ?',
-                               (collection_id,)).fetchone()['start_idx']
+                               (collection_id,)).fetchone()['start_idx'] + 1
         if not cur_idx:
             cur_idx = 0
 
