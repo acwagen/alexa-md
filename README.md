@@ -62,7 +62,7 @@ cd alexa-md-upload
 ./bin/run
 ```
 
-Once the app is running, go to http://localhost:8000/ in a browser.
+Once the app is running, go to http://localhost:5000/ in a browser.
 
 ## Running the skill (alexa-md)
 
@@ -83,7 +83,7 @@ Copy the url from the ngrok output and enter it as the skill's endpoint in the d
 
 ## Testing
 
-After installation, run unit tests for each subproject with 
+After installation, run unit tests for each subproject with
 
 ```
 cd $subproject_folder
@@ -92,8 +92,8 @@ python setup.py test
 
 ## Alexa MD User Guide
 To start the system, say 'File System'.<br/>
-To view a certain image, say 'Open {imagename}' or 'Open {imageindex}.<br/>
-To view the next image, say 'Next {number}.<br/>
-To go back to home page, say 'Return to Start/home'.<br/>
+To enter a certain directory or open an image, say 'Open {imagename}' or 'Open {imageindex}''.<br/>
+To view the next or previous image, say 'Next {number}' or 'Previous {number}'.<br/>
+To go back to the previous page, say 'Return'.<br/>
 To ask for help with other commands, say 'Help'.<br/>
 To exit the system, say 'Exit'.<br/>
