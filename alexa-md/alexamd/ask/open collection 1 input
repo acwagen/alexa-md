@@ -3,9 +3,9 @@ open collection 1 input
 	"version": "1.0",
 	"session": {
 		"new": false,
-		"sessionId": "amzn1.echo-api.session.cdbb0aa2-80ca-45f6-97ca-29403fca3fb0",
+		"sessionId": "amzn1.echo-api.session.0000000-0000-0000-0000-00000000000",
 		"application": {
-			"applicationId": "amzn1.ask.skill.2b8c1648-d9b7-4546-8e22-770d9681cbb0"
+			"applicationId": "amzn1.echo-sdk-ams.app.000000-d0ed-0000-ad00-000000d00ebe"
 		},
 		"attributes": {
 			"study": "CT",
@@ -13,7 +13,7 @@ open collection 1 input
 			"patient": "1"
 		},
 		"user": {
-			"userId": "amzn1.ask.account.AFCNID5KASWMJZIDCF2RXTDNDHEJMK4CLTZGBVM6LMEO3ACI2EKFKPFEXSEKN3YYKYNVB7IEWJIBH4TLFM6HH454S2VVAC2N7PDX5WWZXXQQ3TUB7UBJODF6GFKTGIV23NBLNSFMRMA4HTZV6W5I3LTQBXPHBKWB2NTB5OPQ6NAULLYBYXSNR4STZPLHOWHPT4J7PPLWASQ45UY"
+			"userId": "amzn1.account.AM3B00000000000000000000000"
 		}
 	},
 	"context": {
@@ -22,10 +22,10 @@ open collection 1 input
 		},
 		"System": {
 			"application": {
-				"applicationId": "amzn1.ask.skill.2b8c1648-d9b7-4546-8e22-770d9681cbb0"
+				"applicationId": "amzn1.echo-sdk-ams.app.000000-d0ed-0000-ad00-000000d00ebe"
 			},
 			"user": {
-				"userId": "amzn1.ask.account.AFCNID5KASWMJZIDCF2RXTDNDHEJMK4CLTZGBVM6LMEO3ACI2EKFKPFEXSEKN3YYKYNVB7IEWJIBH4TLFM6HH454S2VVAC2N7PDX5WWZXXQQ3TUB7UBJODF6GFKTGIV23NBLNSFMRMA4HTZV6W5I3LTQBXPHBKWB2NTB5OPQ6NAULLYBYXSNR4STZPLHOWHPT4J7PPLWASQ45UY"
+				"userId": "amzn1.account.AM3B00000000000000000000000"
 			},
 			"device": {
 				"deviceId": "amzn1.ask.device.AF5MV77ST4YWZUZBLETQ52A3JC3SYDRWGAANH7DSNFT5AUYPB243XYJWNJ2IQ3LHGLO4MF3RD5EGUFEYGI4SWLBZ7DXH6FZVMHDBTF53BOK4WCXDEKFHKS4WQHH4GT4NIOXUBFTK5JRKCMJ7T5YA3K2BQSSVH4TKTOFRYQDG6ROKDMA3WB2GQ",
@@ -61,7 +61,7 @@ open collection 1 input
 	},
 	"request": {
 		"type": "IntentRequest",
-		"requestId": "amzn1.echo-api.request.97346f1c-73df-48f8-a0e9-824086734f61",
+		"requestId": "amzn1.echo-api.request.0000000-0000-0000-0000-00000000000",
 		"timestamp": "2018-11-18T16:42:28Z",
 		"locale": "en-US",
 		"intent": {
