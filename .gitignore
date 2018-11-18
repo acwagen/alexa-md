@@ -11,3 +11,4 @@ var/
 ngrok.exe
 venv/
 .vscode/
+.eggs/

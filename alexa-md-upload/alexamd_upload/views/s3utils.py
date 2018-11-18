@@ -7,12 +7,12 @@ import numpngw
 import os
 
 
-S3_BUCKET = alexamd_upload.app.config['S3_BUCKET']
+# S3_BUCKET = alexamd_upload.app.config['S3_BUCKET']
 
-def s3validate():
+def s3validate(s3_bucket=alexamd_upload.app.config['S3_BUCKET']):
     """Compare contents of S3 bucket with database to detect inconsistencies."""
     s3 = boto3.client('s3')
-    resp = s3.list_objects_v2(Bucket=S3_BUCKET)
+    resp = s3.list_objects_v2(Bucket=s3_bucket)
 
     db = alexamd_upload.model.get_db()
 
@@ -37,7 +37,7 @@ def s3validate():
     return True
 
 
-def s3upload(filename, file):
+def s3upload(filename, file, s3_bucket=alexamd_upload.app.config['S3_BUCKET']):
     """Upload a file to our S3 bucket with name id.
 
     file is a readable BytesIO object.)
@@ -49,14 +49,14 @@ def s3upload(filename, file):
         "ACL": "public-read"
     }
 
-    s3.Bucket(S3_BUCKET).upload_fileobj(file, filename, ExtraArgs=extra_s3_args)
+    s3.Bucket(s3_bucket).upload_fileobj(file, filename, ExtraArgs=extra_s3_args)
 
 
-def s3delete(ids):
+def s3delete(ids, s3_bucket=alexamd_upload.app.config['S3_BUCKET']):
     """Remove files with names in ids list from our S3 bucket."""
 
     s3 = boto3.resource('s3')
-    bucket = s3.Bucket(S3_BUCKET)
+    bucket = s3.Bucket(s3_bucket)
 
     images_to_delete = []
     for id in ids:
@@ -73,13 +73,13 @@ def s3delete(ids):
     print('Response: {}'.format(response))
 
 
-def s3fetch(id):
+def s3fetch(id, s3_bucket=alexamd_upload.app.config['S3_BUCKET']):
     """Get url for file with name id from our S3 bucket."""
     s3 = boto3.client('s3')
 
     filename = '{}.png'.format(id)
 
-    s3.head_object(Bucket=S3_BUCKET, Key=filename)
+    s3.head_object(Bucket=s3_bucket, Key=filename)
     url = s3.generate_presigned_url('get_object',Params={'Bucket':S3_BUCKET,'Key':filename,})
     base_url = url.split('?')[0]
 

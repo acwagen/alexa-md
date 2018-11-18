@@ -19,7 +19,8 @@ setup(
     tests_require=[
         'bs4',
         'requests',
-        'mock'
+        'mock',
+        'moto'
     ],
     test_suite='alexamd_upload.tests'
 )
