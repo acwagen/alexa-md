@@ -148,6 +148,11 @@ def FetchFirstImageInCollection(CID):
     cur = db.execute('select IID from Images where IND = 0 and CID=?',(CID,)).fetchone()
     return cur['IID']
 
+def FetchPatientName(PID):
+    db = get_db()
+    cur = db.execute('select P_First, P_Last from Patients where PID=?',(PID,)).fetchone()
+    return cur['P_First'] +' '+cur['P_Last']
+
 
 #-----------------------------------------------------------------------------
 # S3 utility functions
@@ -197,19 +202,21 @@ def NavigateToStudy(PID, study):
     return question(msg).list_display_render(title='Study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
 
 
-def NavigateToFirstImage(CID):
+def NavigateToFirstImage(CID, PID):
     IID = FetchFirstImageInCollection(CID)
     url = GetImageURL(IID)[0]
-    msg = 'open '+IID
-    return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
+    patient_name = FetchPatientName(PID)
+    msg = 'open image'
+    return question(msg).display_render(title=patient_name,  template='BodyTemplate7', image=url)
 
-def NavigateToImage(CID, Index, help_msg = None):
+def NavigateToImage(CID, Index, PID,help_msg = None):
     IID = FetchScroll(CID, Index)
     url = GetImageURL(IID)[0]
-    msg = 'open '+IID
+    msg = 'open image'
+    patient_name = FetchPatientName(PID)
     if help_msg != None:
         msg = help_msg
-    return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
+    return question(msg).display_render(title=patient_name,  template='BodyTemplate7', image=url)
     
 
 def NavigateToHome():
@@ -367,13 +374,13 @@ def open(imageName):
             session.attributes['collection'] = CID
             session.attributes['index'] = 0
             session.attributes['level'] = 'image'
-            return NavigateToFirstImage(session.attributes['collection'])
+            return NavigateToFirstImage(session.attributes['collection'],session.attributes['patient'])
         else:
             CID = FetchCollectionID(session.attributes['patient'],filename,session.attributes['study'])
             session.attributes['collection'] = CID
             session.attributes['index'] = 0
             session.attributes['level'] = 'image'
-            return NavigateToFirstImage(session.attributes['collection'])
+            return NavigateToFirstImage(session.attributes['collection'],session.attributes['patient'])
     elif session.attributes['level'] == 'image':
         msg = "You should not call open in this stage, try another command"
         return question(msg)
@@ -426,9 +433,9 @@ def next(number):
     if item == None:
         help_msg = 'Moving ' + str(number)+" spaces forward went out of bounds. Can't go next"
         session.attributes['index'] -= int(number)
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'], help_msg)
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'], help_msg)
     else:
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'])
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
 
 @ask.intent("AMAZON.NextIntent")
 def nextOne():
@@ -438,9 +445,9 @@ def nextOne():
     if item == None:
         help_msg = "Moving 1 space forward went out of bounds. Can't go next"
         session.attributes['index'] -= 1
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'], help_msg)
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'], session.attributes['patient'],help_msg)
     else:
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'])
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
 
 
 @ask.intent("PreviousIntent", mapping={'number': 'number'})
@@ -451,9 +458,9 @@ def previous(number):
     if item == None:
         help_msg = "Moving " + str(number)+" spaces backward went out of bounds. Can't go to previous"
         session.attributes['index'] += int(number)
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'], help_msg)
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'], session.attributes['patient'],help_msg)
     else:
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'])
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
 
 
 @ask.intent("AMAZON.PreviousIntent")
@@ -464,9 +471,9 @@ def previousOne():
     if item == None:
         help_msg = "Moving 1 space backward went out of bounds. Can't go to previous"
         session.attributes['index'] += 1
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'], help_msg)
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'], help_msg)
     else:
-        return NavigateToImage(session.attributes['collection'], session.attributes['index'])
+        return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
 
 
 
