@@ -65,7 +65,7 @@ def upload(patient_id):
 
         # TODO: add progress bar to show how many images are processed
         for file in request.files.getlist('files'):
-            image_id = str(uuid.uuid1())
+            image_id = '{}.png'.format(uuid.uuid1())
 
             print('[DEBUGGING] image_id is {}, file is {}'.format(image_id, file))
 
