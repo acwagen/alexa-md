@@ -37,13 +37,11 @@ def s3validate():
     return True
 
 
-def s3upload(id, file):
+def s3upload(filename, file):
     """Upload a file to our S3 bucket with name id.
 
     file is a readable BytesIO object.)
     """
-
-    filename = '{}.png'.format(id)
 
     s3 = boto3.resource('s3')
     extra_s3_args = {
@@ -64,7 +62,7 @@ def s3delete(ids):
     for id in ids:
         print('Removing {} from S3.'.format(id))
         images_to_delete.append({
-            'Key': '{}.png'.format(id)
+            'Key': id
         })
 
     response = bucket.delete_objects(
