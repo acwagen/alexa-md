@@ -5,53 +5,136 @@ import os
 import sqlite3
 import json
 
+
 class AlexaMDTestBase(unittest.TestCase):
     launch = {
-      "version": "1.0",
-      "session": {
-        "new": True,
-        "sessionId": "amzn1.echo-api.session.0000000-0000-0000-0000-00000000000",
-        "application": {
-          "applicationId": "fake-application-id"
-        },
-        "attributes": {},
-        "user": {
-          "userId": "amzn1.account.AM3B00000000000000000000000"
-        }
-      },
-      "context": {
-        "System": {
-          "application": {
-            "applicationId": "fake-application-id"
-          },
-          "user": {
-            "userId": "amzn1.account.AM3B00000000000000000000000"
-          },
-          "device": {
-            "supportedInterfaces": {
-              "AudioPlayer": {}
+        "version": "1.0",
+        "session": {
+            "new": True,
+            "sessionId": "amzn1.echo-api.session.0000000-0000-0000-0000-00000000000",
+            "application": {
+                "applicationId": "fake-application-id"
+            },
+            "attributes": {},
+            "user": {
+                "userId": "amzn1.account.AM3B00000000000000000000000"
             }
-          }
         },
-        "AudioPlayer": {
-          "offsetInMilliseconds": 0,
-          "playerActivity": "IDLE"
-        }
-      },
-      "request": {
-        "type": "LaunchRequest",
-        "requestId": "string",
-        "timestamp": "string",
-        "locale": "string",
-        "intent": {
-          "name": "TestPlay",
-          "slots": {
+        "context": {
+            "System": {
+                "application": {
+                    "applicationId": "fake-application-id"
+                },
+                "user": {
+                    "userId": "amzn1.account.AM3B00000000000000000000000"
+                },
+                "device": {
+                    "supportedInterfaces": {
+                        "AudioPlayer": {}
+                    }
+                }
+            },
+            "AudioPlayer": {
+                "offsetInMilliseconds": 0,
+                "playerActivity": "IDLE"
             }
-          }
+        },
+        "request": {
+            "type": "LaunchRequest",
+            "requestId": "string",
+            "timestamp": "string",
+            "locale": "string",
+            "intent": {
+                "name": "TestPlay",
+                "slots": {
+                }
+            }
         }
     }
 
-    RESOURCES_DIR = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'resources')
+    open_patient = {
+        "version": "1.0",
+        "session": {
+            "new": False,
+            "sessionId": "amzn1.echo-api.session.0000000-0000-0000-0000-00000000000",
+            "application": {
+                "applicationId": "amzn1.echo-sdk-ams.app.000000-d0ed-0000-ad00-000000d00ebe"
+            },
+            "attributes": {
+                "level": "home"
+            },
+            "user": {
+                "userId": "amzn1.account.AM3B00000000000000000000000"
+            }
+        },
+        "context": {
+            "Display": {
+                "token": ""
+            },
+            "System": {
+                "application": {
+                    "applicationId": "amzn1.echo-sdk-ams.app.000000-d0ed-0000-ad00-000000d00ebe"
+                },
+                "user": {
+                    "userId": "amzn1.account.AM3B00000000000000000000000"
+                },
+                "device": {
+                    "supportedInterfaces": {
+                        "Display": {
+                                "templateVersion": "1.0",
+                            "markupVersion": "1.0"
+                        }
+                    }
+                },
+                "apiEndpoint": "https://api.amazonalexa.com",
+                "apiAccessToken": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiIsImtpZCI6IjEifQ.eyJhdWQiOiJodHRwczovL2FwaS5hbWF6b25hbGV4YS5jb20iLCJpc3MiOiJBbGV4YVNraWxsS2l0Iiwic3ViIjoiYW16bjEuYXNrLnNraWxsLjJiOGMxNjQ4LWQ5YjctNDU0Ni04ZTIyLTc3MGQ5NjgxY2JiMCIsImV4cCI6MTU0MjU2MjgzMiwiaWF0IjoxNTQyNTU5MjMyLCJuYmYiOjE1NDI1NTkyMzIsInByaXZhdGVDbGFpbXMiOnsiY29uc2VudFRva2VuIjpudWxsLCJkZXZpY2VJZCI6ImFtem4xLmFzay5kZXZpY2UuQUY1TVY3N1NUNFlXWlVaQkxFVFE1MkEzSkMzU1lEUldHQUFOSDdEU05GVDVBVVlQQjI0M1hZSldOSjJJUTNMSEdMTzRNRjNSRDVFR1VGRVlHSTRTV0xCWjdEWEg2RlpWTUhEQlRGNTNCT0s0V0NYREVLRkhLUzRXUUhINEdUNE5JT1hVQkZUSzVKUktDTUo3VDVZQTNLMkJRU1NWSDRUS1RPRlJZUURHNlJPS0RNQTNXQjJHUSIsInVzZXJJZCI6ImFtem4xLmFzay5hY2NvdW50LkFGQ05JRDVLQVNXTUpaSURDRjJSWFRETkRIRUpNSzRDTFRaR0JWTTZMTUVPM0FDSTJFS0ZLUEZFWFNFS04zWVlLWU5WQjdJRVdKSUJINFRMRk02SEg0NTRTMlZWQUMyTjdQRFg1V1daWFhRUTNUVUI3VUJKT0RGNkdGS1RHSVYyM05CTE5TRk1STUE0SFRaVjZXNUkzTFRRQlhQSEJLV0IyTlRCNU9QUTZOQVVMTFlCWVhTTlI0U1RaUExIT1dIUFQ0SjdQUExXQVNRNDVVWSJ9fQ.J3JDfpyOqlxoPrsrB3V-TG1hNgY72Q2lzntOX8v4YXAUHBr9Awg1frUfezm2IlH_boFCXc73UXrcrHlDnIXrgujuigiGeW3C6DQeyO41F3Bub_X55LYvWAduK4Pnh91SfmpRGFiUDjmXj-3icetrKvbBd3T9ssfZu1KNN_xzDB48i0q1iLixxu4gbXG6AeQjrgUf1gu4WWOQQSeVEPhuHTX-qZ08s6dxKh0oy1KURUDjhZCggNl8yICx8RcopsXzTlyOxnFsM5hnUVYin35BJ7QOl8lMH-Dq0wWQ4w1hM6k1p-xdcuLjCYyP1NjLVjqglMhiN6evDSGk7-pZUQm6uQ"
+            },
+            "Viewport": {
+                "experiences": [
+                        {
+                            "arcMinuteWidth": 246,
+                            "arcMinuteHeight": 144,
+                            "canRotate": False,
+                            "canResize": False
+                        }
+                ],
+                "shape": "RECTANGLE",
+                "pixelWidth": 1024,
+                "pixelHeight": 600,
+                "dpi": 160,
+                "currentPixelWidth": 1024,
+                "currentPixelHeight": 600,
+                "touch": [
+                    "SINGLE"
+                ]
+            }
+        },
+        "request": {
+            "type": "IntentRequest",
+            "requestId": " amzn1.echo-api.request.0000000-0000-0000-0000-00000000000",
+            "timestamp": "2018-11-18T16:40:32Z",
+            "locale": "en-US",
+            "intent": {
+                    "name": "OpenIntent",
+                    "confirmationStatus": "NONE",
+                    "slots": {
+                            "imageName": {
+                                "name": "imageName",
+                                "value": "1",
+                                "confirmationStatus": "NONE",
+                                "source": "USER"
+                            },
+                        "imageIndex": {
+                                "name": "imageIndex",
+                                "confirmationStatus": "NONE"
+                        }
+                    }
+            }
+        }
+    }
+
+    RESOURCES_DIR = os.path.join(os.path.dirname(
+        os.path.realpath(__file__)), 'resources')
 
     @classmethod
     def _execute_sql_script(cls, name):
@@ -93,6 +176,10 @@ class AlexaMDTestBase(unittest.TestCase):
         response = self.app.post('/', data=json.dumps(self.launch))
         self.assertEqual(200, response.status_code)
 
+    def test_open_patient(self):
+        response = self.app.post('/', data=json.dumps(self.open_patient))
+        self.assertEqual(200, response.status_code)
+
 
 if __name__ == "__main__":
-     unittest.main()
+    unittest.main()
