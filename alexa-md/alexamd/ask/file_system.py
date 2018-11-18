@@ -171,7 +171,7 @@ def NavigateToPatient(PID):
         if info[1] in all_studies:
             continue
         all_studies.add(info[1])
-        display_texts.append(str(info[0])+"_"+str(info[1]))
+        display_texts.append(str(info[1]))
  
     msg = 'open patient page'
     return question(msg).list_display_render(title='Patient Page', template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1')
@@ -191,10 +191,10 @@ def NavigateToStudy(PID, study):
     for info in image_infos:
         url = GetImageURL(info[0])[0] #url
         c_name = FetchCollectionNameByID(info[1])
-        c_name = c_name +" "+ str(info[1])
+        c_name = c_name
         display_items.append(disply_image_item(url,c_name))
     msg = 'Open study page'
-    return question(msg).list_display_render(title='study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
+    return question(msg).list_display_render(title='Study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
 
 
 def NavigateToFirstImage(CID):
@@ -210,6 +210,19 @@ def NavigateToImage(CID, Index, help_msg = None):
     if help_msg != None:
         msg = help_msg
     return question(msg).display_render(title=IID,  template='BodyTemplate7', image=url)
+    
+
+def NavigateToHome():
+    db = get_db()
+    cur = db.execute('select * from Patients')
+    patent_info = cur.fetchall()
+    patient_names = []
+    for row in patent_info:
+        patient_names.append(row['P_First'])
+    msg = flask.render_template('welcome')
+    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
+    
+
  #---------------------------------------------------------------------   
 
 #functions that transfer Display ID into PID, CID   
@@ -266,18 +279,14 @@ def open_response(msg, filename):
 
 @ask.launch
 def launch():
-
-    db = get_db()
-    cur = db.execute('select * from Patients')
-    patent_info = cur.fetchall()
-    patient_names = []
-    for row in patent_info:
-        patient_names.append("Patient: "+str(row['PID'])+" "+row['P_First'])
-
-    msg = flask.render_template('welcome')
+    print('launch')
     session.attributes['level'] = 'home'
-    print('SET session.attributes to be level')
-    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
+    # session.attributes['patient'] = None
+    # session.attributes['study'] = None
+    # session.attributes['collection'] = None
+    # session.attributes['index'] = None
+    print(session.attributes)                        
+    return NavigateToHome()
 
 
 @ask.intent("StartIntent")
@@ -285,8 +294,13 @@ def start():
     # msg = render_template('welcome')
     # session.attributes.attributes['curr_index'] = -1
     # return start_response_s3(msg)
-    launch()
-
+    print("running start")
+    session.attributes['level'] = 'home'
+    session.attributes['patient'] = None
+    session.attributes['study'] = None
+    session.attributes['collection'] = None
+    session.attributes['index'] = None
+    return NavigateToHome()
 
 @ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
 def open(imageName):
@@ -370,8 +384,6 @@ def open(imageName):
         exit(1)
 
 
-
-# TODO: create return intent in alexa developer console
 @ask.intent("ReturnIntent")
 def returndir():
     
