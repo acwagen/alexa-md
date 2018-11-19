@@ -5,8 +5,8 @@ INSERT INTO Patients(P_First,P_Last) VALUES
 ("mike", "w");
 
 INSERT INTO Collections(C_Name,PID, Study) VALUES
-("allysa_CT",1,"CT"),
-("allysa_MRI",1,"MRI"),
+("alyssa_CT",1,"CT"),
+("alyssa_MRI",1,"MRI"),
 ("anthony_CT",2,"CT"),
 ("anthony_MRI",2,"MRI"),
 ("derek_CT",3,"CT"),
