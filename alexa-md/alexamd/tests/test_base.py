@@ -119,15 +119,15 @@ class AlexaMDTestBase(unittest.TestCase):
                     "confirmationStatus": "NONE",
                     "slots": {
                             "imageName": {
-                                "name": "imageName",
-                                "value": "1",
-                                "confirmationStatus": "NONE",
-                                "source": "USER"
+                              "name": "imageName",
+                              "confirmationStatus": "NONE"
                             },
-                        "imageIndex": {
-                                "name": "imageIndex",
-                                "confirmationStatus": "NONE"
-                        }
+                            "imageIndex": {
+                              "name": "imageIndex",
+                              "value": "1",
+                              "confirmationStatus": "NONE",
+                              "source": "USER"
+                            }
                     }
             }
         }
@@ -202,13 +202,13 @@ class AlexaMDTestBase(unittest.TestCase):
           "slots": {
             "imageName": {
               "name": "imageName",
-              "value": "1",
-              "confirmationStatus": "NONE",
-              "source": "USER"
+              "confirmationStatus": "NONE"
             },
             "imageIndex": {
               "name": "imageIndex",
-              "confirmationStatus": "NONE"
+              "value": "1",
+              "confirmationStatus": "NONE",
+              "source": "USER"
             }
           }
         }
@@ -285,13 +285,13 @@ class AlexaMDTestBase(unittest.TestCase):
               "slots": {
                 "imageName": {
                   "name": "imageName",
-                  "value": "1",
-                  "confirmationStatus": "NONE",
-                  "source": "USER"
+                  "confirmationStatus": "NONE"
                 },
                 "imageIndex": {
                   "name": "imageIndex",
-                  "confirmationStatus": "NONE"
+                  "value": "1",
+                  "confirmationStatus": "NONE",
+                  "source": "USER"
                 }
               }
             }
@@ -429,15 +429,15 @@ class AlexaMDTestBase(unittest.TestCase):
 
     def test_open_study(self):
         response = self.app.post('/', data=json.dumps(self.open_study))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_open_collection(self):
         response = self.app.post('/', data=json.dumps(self.open_collection))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(200, response.status_code)
 
     def test_next(self):
         response = self.app.post('/', data=json.dumps(self.next))
-        self.assertEqual(500, response.status_code)
+        self.assertEqual(200, response.status_code)
 
 
 
