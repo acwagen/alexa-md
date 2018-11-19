@@ -59,9 +59,11 @@ def upload(patient_id):
         study = db.execute('select study from collections where cid = ?',
                            (collection_id,)).fetchone()['Study']
         cur_idx = db.execute('select max(ind) as start_idx from images where cid = ?',
-                               (collection_id,)).fetchone()['start_idx'] + 1
+                               (collection_id,)).fetchone()['start_idx']
         if not cur_idx:
             cur_idx = 0
+        else:
+            cur_idx += 1
 
         # TODO: add progress bar to show how many images are processed
         for file in request.files.getlist('files'):
