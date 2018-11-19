@@ -12,18 +12,10 @@ from s3utils import s3upload, s3delete
 import os
 import io
 
+@mock_s3()
 class TestS3Delete(TestAlexaMDUploadBase):
-    mock_s3 = mock_s3()
-
     # docs.getmoto.org/en/latest/docs/getting_started.html
 
-    @mock_s3()
-    def test_s3_stuff():
-        # stuff
-        s3 = boto3.resource('s3')
-
-
-    @mock_s3
     def test_upload_to_s3(self):
         conn = boto3.resource('s3', region_name='us-east-2')
         # We need to create the bucket since this is all in Moto's 'virtual' AWS account
@@ -31,11 +23,14 @@ class TestS3Delete(TestAlexaMDUploadBase):
         conn.create_bucket(Bucket=test_bucket)
         mock_bucket = conn.Bucket(test_bucket)
 
-        test_image = os.path.join(self.RESOURCES_DIR, 'test0.png')
+        image_id = 'test0.png'
+        image_id2 = 'test1.png'
+        test_image = os.path.join(self.RESOURCES_DIR, image_id)
+        test_image2 = os.path.join(self.RESOURCES_DIR, image_id2)
         test_filename = 'testfile.txt'
         test_filename2 = 'testfile2.txt'
 
-        image_id = 'todochangethistexttosomethingmoresuitableimgoingtotkdnow.png'
+        assert(len(s3_items) == 0)
 
         f1 = open(test_image, 'rb')
         f1 = io.BytesIO()
@@ -43,25 +38,37 @@ class TestS3Delete(TestAlexaMDUploadBase):
             test_image.save(image)
             image.seek(0)
             # image is now true file i want to upload or call
-            s3upload(image_id, image)
+            s3upload(image_id, image, s3_bucket=test_bucket)
+        
+        s3_items = mock_bucket.objects.all()
 
-        file = open(test_filename, 'w')
-        file.write('Hello Dr. Chesney')
-        file.close()
+        assert(len(s3_items) == 1)
+
+        mock_bucket.download_file(image_id, image_id2)
+
+        assert(filecmp.cmp(test_image, test_image2))
+        # if filecmp.cmp(test_image, test_image2):
+        #     print('True')
+        # else:
+        #     print('False')
+
+        # file = open(test_filename, 'w')
+        # file.write('Hello Dr. Chesney')
+        # file.close()
 
         # call function TODO DO THIS AND GET SOME IMAGE SOMEHOW
         # s3upload(filename, file, s3_bucket=test_bucket)
 
-        s3_args = {"ACL": "public-read"}
-        mock_bucket.upload_file(test_filename, test_filename, ExtraArgs=s3_args)
+        # s3_args = {"ACL": "public-read"}
+        # mock_bucket.upload_file(test_filename, test_filename, ExtraArgs=s3_args)
         # s3.Bucket(S3_BUCKET).upload_file(filename, filename, ExtraArgs=extra_s3_args)
 
-        response = mock_bucket.download_file(test_filename, test_filename2)
-        print('MY RESPONSE IS ||||| {} |||||'.format(response))
-        if filecmp.cmp(test_filename, test_filename2):
-            print('True')
-        else:
-            print('False')
+        # response = mock_bucket.download_file(test_filename, test_filename2)
+        # print('MY RESPONSE IS ||||| {} |||||'.format(response))
+        # if filecmp.cmp(test_filename, test_filename2):
+        #     print('True')
+        # else:
+        #     print('False')
 
         # TODO delete both files and bucket and do something with bool 38
 
@@ -84,7 +91,7 @@ class TestS3Delete(TestAlexaMDUploadBase):
         s3_args = {"ACL": "public-read"}
         mock_bucket.upload_file(test_filename, test_filename, ExtraArgs=s3_args)
         
-        s3delete
+        # s3delete
 
         s3_items = mock_bucket.objects.all()
 
