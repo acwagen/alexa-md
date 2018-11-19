@@ -309,17 +309,18 @@ def start():
     session.attributes['index'] = None
     return NavigateToHome()
 
-@ask.intent("OpenIntent", mapping={'imageName': 'imageName'})
-def open(imageName):
+@ask.intent("OpenIntent", mapping={'imageIndex': 'imageIndex'})
+def open(imageIndex):
+    print(imageIndex)
     useID = True
     try:
-        imageName = int(imageName)
+        imageIndex = int(imageIndex)
         # it's a number
-        filename = str(imageName)
+        filename = str(imageIndex)
     except ValueError:
         # it's a string like 'Mike'
         useID = False
-        filename = str(imageName)
+        filename = str(imageIndex)
 
     print('Open')
 
