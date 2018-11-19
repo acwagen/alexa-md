@@ -142,7 +142,8 @@ def manage_patient(patient_id):
             for image in db.execute('select i.iid from images i where cid = ?',
                 (request.form['id'],)):
                 image_ids.append(image['IID'])
-            s3delete(image_ids)
+            if len(image_ids):
+                s3delete(image_ids)
 
             db.execute('delete from collections where cid = ?', (request.form['id'],))
         else:
@@ -176,7 +177,8 @@ def manage():
                 join collections c on c.cid = i.cid where c.pid = ?',
                 (request.form['id'],)):
                 image_ids.append(image['IID'])
-            s3delete(image_ids)
+            if len(image_ids):
+                s3delete(image_id)
 
             db.execute('delete from patients where pid = ?', (request.form['id'],))
 
