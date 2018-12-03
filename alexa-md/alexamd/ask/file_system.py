@@ -1,7 +1,8 @@
 from alexamd import app, ask
 import flask
 from flask import render_template
-from flask_ask import Ask, statement, question,session
+from flask_ask import Ask, statement,session
+import flask_ask
 from jinja2 import Template
 from boto.s3.connection import S3Connection
 import boto3
@@ -10,6 +11,13 @@ import sqlite3
 
 
 conn = sqlite3.connect('alexamd.db')
+
+
+
+def question(msg):
+    resp = flask_ask.question(msg)
+    resp._response.pop('shouldEndSession', None)
+    return resp
 
 # global variables
 #----------helper functions--------------------------------------------------
@@ -154,6 +162,12 @@ def FetchPatientName(PID):
     return cur['P_First'] +' '+cur['P_Last']
 
 
+def FetchImageCount(CID):
+    db = get_db()
+    cur = db.execute('select * from Images where CID=?',(CID,)).fetchall()
+    return len(cur)
+
+
 #-----------------------------------------------------------------------------
 # S3 utility functions
 def GetImageURL(image_name):
@@ -197,6 +211,8 @@ def NavigateToStudy(PID, study):
         url = GetImageURL(info[0])[0] #url
         c_name = FetchCollectionNameByID(info[1])
         c_name = c_name
+        image_count = FetchImageCount(info[1])
+        c_name = c_name + ","+str(image_count)+" images"
         display_items.append(disply_image_item(url,c_name))
     msg = 'Open study page'
     return question(msg).list_display_render(title='Study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
@@ -263,6 +279,21 @@ def GetCidFromDisplayID(display_id, PID, study):
     if display_id >= len(image_infos):
         return None
     return str(image_infos[display_id][1])
+
+
+# def GetCurrentPath():
+#     db = get_db()
+#     if session.attributes['level'] == 'patient':
+#         res = FetchPatientName(session.attributes['patient'])
+
+        
+#     elif session.attributes['level'] == 'study':
+#         psas
+#     elif session.attributes['level']== 'image':
+    
+#     else:
+#         print("Level name is invalid")
+
 
 
 # fucntions to implement the skills.
