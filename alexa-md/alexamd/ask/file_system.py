@@ -159,7 +159,7 @@ def FetchFirstImageInCollection(CID):
 def FetchPatientName(PID):
     db = get_db()
     cur = db.execute('select P_First, P_Last from Patients where PID=?',(PID,)).fetchone()
-    return cur['P_First'] +' '+cur['P_Last']
+    return cur['P_Last']+','+cur['P_First']
 
 
 def FetchImageCount(CID):
@@ -181,6 +181,18 @@ def GetImageURL(image_name):
     return [url.split('?')[0],image_name]
 #------------------------------------------------------------------------------
 #Navigate Functions
+
+def NavigateToHome():
+    db = get_db()
+    cur = db.execute('select * from Patients')
+    patent_info = cur.fetchall()
+    patient_names = []
+    for row in patent_info:
+        patient_names.append(row['P_First'])
+    msg = flask.render_template('welcome')
+    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
+
+
 def NavigateToPatient(PID):
     
     patient_infos = FetchPatientsInfo(PID)
@@ -193,7 +205,8 @@ def NavigateToPatient(PID):
         display_texts.append(str(info[1]))
  
     msg = 'open patient page'
-    return question(msg).list_display_render(title='Patient Page', template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1')
+    path = GetCurrentPath()
+    return question(msg).list_display_render(title=path, template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1')
     
 
 def NavigateToStudy(PID, study):
@@ -212,38 +225,33 @@ def NavigateToStudy(PID, study):
         c_name = FetchCollectionNameByID(info[1])
         c_name = c_name
         image_count = FetchImageCount(info[1])
-        c_name = c_name + ","+str(image_count)+" images"
+        c_name = "Collection Name: "+c_name + " , "+"Image Counts: "+str(image_count)
         display_items.append(disply_image_item(url,c_name))
     msg = 'Open study page'
-    return question(msg).list_display_render(title='Study Page', template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
+    path = GetCurrentPath()
+    return question(msg).list_display_render(title=path, template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
 
 
 def NavigateToFirstImage(CID, PID):
     IID = FetchFirstImageInCollection(CID)
     url = GetImageURL(IID)[0]
-    patient_name = FetchPatientName(PID)
+    # patient_name = FetchPatientName(PID)
     msg = 'open image'
-    return question(msg).display_render(title=patient_name,  template='BodyTemplate7', image=url)
+    path = GetCurrentPath()
+    return question(msg).display_render(title=path,  template='BodyTemplate7', image=url)
 
 def NavigateToImage(CID, Index, PID,help_msg = None):
     IID = FetchScroll(CID, Index)
     url = GetImageURL(IID)[0]
     msg = 'open image'
-    patient_name = FetchPatientName(PID)
+    # patient_name = FetchPatientName(PID)
     if help_msg != None:
         msg = help_msg
-    return question(msg).display_render(title=patient_name,  template='BodyTemplate7', image=url)
+    path = GetCurrentPath()
+    return question(msg).display_render(title=path,  template='BodyTemplate7', image=url)
     
 
-def NavigateToHome():
-    db = get_db()
-    cur = db.execute('select * from Patients')
-    patent_info = cur.fetchall()
-    patient_names = []
-    for row in patent_info:
-        patient_names.append(row['P_First'])
-    msg = flask.render_template('welcome')
-    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
+
     
 
  #---------------------------------------------------------------------   
@@ -281,18 +289,24 @@ def GetCidFromDisplayID(display_id, PID, study):
     return str(image_infos[display_id][1])
 
 
-# def GetCurrentPath():
-#     db = get_db()
-#     if session.attributes['level'] == 'patient':
-#         res = FetchPatientName(session.attributes['patient'])
-
+def GetCurrentPath():
+    if session.attributes['level'] == 'patient':
+        res = "Patient: "+FetchPatientName(session.attributes['patient'])
+        return res
+    elif session.attributes['level'] == 'study':
+        res = "Patient: "+FetchPatientName(session.attributes['patient'])
+        res += " | Study: "+ session.attributes['study']
+        return res
+    elif session.attributes['level']== 'image':
+        res = "Patient: "+FetchPatientName(session.attributes['patient'])
+        res += " | Study: "+ session.attributes['study']
+        res += " | Collection: "+ FetchCollectionNameByID(session.attributes['collection'])
+        res += " | Index: "+ str(session.attributes['index'])
+        return res
         
-#     elif session.attributes['level'] == 'study':
-#         psas
-#     elif session.attributes['level']== 'image':
-    
-#     else:
-#         print("Level name is invalid")
+    else:
+        print("Level name is invalid")
+        return None
 
 
 
