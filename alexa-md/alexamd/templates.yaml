@@ -10,6 +10,8 @@ previous: Previous {{number}}
 
 help: You can say return to home to navigate to the home page, open one to open the first image or you can say exit. What can I help with?
 
+error: error, previous or next commands can only be used when viewing images
+
 goodbye: Goodbye!
 
 all_your_base_msg: All your base are belong to {{ who }}

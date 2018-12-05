@@ -491,6 +491,8 @@ def returndir():
 @ask.intent("NextIntent", mapping={'number': 'number'})
 def next(number):
     # get nextIndex
+    if session.attributes['level'] != 'image':
+        return error()
     session.attributes['index'] += int(number)
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
@@ -503,6 +505,9 @@ def next(number):
 @ask.intent("AMAZON.NextIntent")
 def nextOne():
     # get nextIndex
+    if session.attributes['level'] != 'image':
+        return error()
+
     session.attributes['index'] += 1
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
@@ -516,6 +521,8 @@ def nextOne():
 @ask.intent("PreviousIntent", mapping={'number': 'number'})
 def previous(number):
     # get nextIndex
+    if session.attributes['level'] != 'image':
+        return error()
     session.attributes['index'] -= int(number)
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
@@ -529,6 +536,8 @@ def previous(number):
 @ask.intent("AMAZON.PreviousIntent")
 def previousOne():
     # get nextIndex
+    if session.attributes['level'] != 'image':
+        return error()
     session.attributes['index'] -= 1
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
@@ -555,3 +564,8 @@ def help():
     # else:
     #     image_name = my_list[session.attributes.attributes['curr_index']]["textContent"]["primaryText"]["text"]
     #     return open_response(help_msg, image_name)
+
+def error():
+
+    error_msg = render_template('error')
+    return create_response(question(error_msg))
