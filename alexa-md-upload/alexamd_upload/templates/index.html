@@ -2,18 +2,16 @@
 {% block content %}
 <!-- Load JavaScript -->
 <p>Welcome to Alexa MD! Select a patient to upload or manage images.</p>
-<form action='#' method="post" enctype="multipart/form-data">
-    <p>Patient:
-        <select name="patient">
-            {% for patient in patients %}
-            {% if patient_id and patient['id'] == patient_id %}
-                <option value="{{ patient['id'] }}" selected>{{ patient['name'] }}</option>
-            {% else %}
-                <option value="{{ patient['id'] }}">{{ patient['name'] }}</option>
-            {% endif %}
-            {% endfor %}
-        </select>
-        <input type="submit" value="select patient">
-    </p>
-</form>
+<p>
+    Patients
+    <ul>
+        {% for patient in patients %}
+        <li>
+            {{ patient['name'] }}
+            <a href="/patient/{{ patient['id'] }}/upload/">upload</a>
+            <a href="/patient/{{ patient['id'] }}/manage/">manage</a>
+        </li>
+        {% endfor %}
+    </ul>
+</p>
 {% endblock %}

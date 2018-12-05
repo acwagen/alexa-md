@@ -7,40 +7,18 @@ from mock import patch
 
 class TestIndex(TestAlexaMDUploadBase):
     def test_default(self):
-        option_values = { 1 : 'w, alyssa',
-                    2 : 's, anthony',
-                    3 : 'y, derek',
-                    4 : 'w, mike' }
-        self.assertOptions('/', option_values)
-
-    def test_index_after_select(self):
-        response = self.app.post('/', data=dict(patient=2))
+        response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
 
-        option_values = { 1 : 'w, alyssa',
-                    2 : 's, anthony',
-                    3 : 'y, derek',
-                    4 : 'w, mike' }
-        self.assertOptions('/', option_values, selected=2)
+        list_values = [ 'w, alyssa',
+                    's, anthony',
+                    'y, derek',
+                    'w, mike' ]
 
-    @patch('alexamd_upload.views.views.s3delete')
-    def test_index_with_select_after_delete(self, s3delete_function):
-        response = self.app.post('/manage/', data=dict(id=2))
-        self.assertEqual(response.status_code, 200)
-
-        option_values = { 1 : 'w, alyssa',
-                    3 : 'y, derek',
-                    4 : 'w, mike' }
-        self.assertOptions('/', option_values)
-
-
-    def test_index_after_create(self):
-        response = self.app.post('/manage/', data=dict(name='test patient'))
-        self.assertEqual(response.status_code, 200)
-
-        option_values = { 1 : 'w, alyssa',
-                    2 : 's, anthony',
-                    3 : 'y, derek',
-                    4 : 'w, mike',
-                    5 : 'patient, test' }
-        self.assertOptions('/', option_values)
+        soup = bs4.BeautifulSoup(response.data, "html.parser")
+        list_items = soup.find_all('li')
+        self.assertEqual(len(list_items), len(list_values))
+        for li in list_items:
+            name = li.text.strip().split('\n')
+            self.assertTrue(len(name) > 1)
+            self.assertIn(name[0], list_values)

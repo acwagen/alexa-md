@@ -28,7 +28,7 @@ class TestManagePatients(TestAlexaMDUploadBase):
         self.assertListItems('/manage/', list_values)
 
     def test_create_patient(self):
-        response = self.app.post('/manage/', data=dict(name='test patient'))
+        response = self.app.post('/manage/', data=dict(f_name='test', l_name='patient'))
         self.assertEqual(response.status_code, 200)
 
         list_values = { 1 : 'w, alyssa',

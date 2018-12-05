@@ -22,12 +22,3 @@ class TestManageCollections(TestAlexaMDUploadBase):
 
         list_values = { 2 : 'alyssa_MRI (1 image)' }
         self.assertListItems('/patient/1/manage/', list_values)
-
-    def test_create_collection(self):
-        response = self.app.post('/patient/1/manage/', data=dict(name='test collection'))
-        self.assertEqual(response.status_code, 200)
-
-        list_values = { 1 : 'alyssa_CT (3 images)',
-                        2 : 'alyssa_MRI (1 image)',
-                        9 : 'test collection (0 images)' }
-        self.assertListItems('/patient/1/manage/', list_values)
