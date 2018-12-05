@@ -12,7 +12,8 @@ import sqlite3
 
 conn = sqlite3.connect('alexamd.db')
 
-
+# store cid to index id
+cache = {}
 
 def create_response(resp):
     resp._response.pop('shouldEndSession')
@@ -163,7 +164,11 @@ def FetchCollectionID(PID,C_name,study):
 
 def FetchFirstImageInCollection(CID):
     db = get_db()
-    cur = db.execute('select IID from Images where IND = 0 and CID=?',(CID,)).fetchone()
+    # check if we previously accessed an image in this collection
+    if CID not in cache:
+        cur = db.execute('select IID from Images where IND = 0 and CID=?',(CID,)).fetchone()
+    else:
+        cur = db.execute('select IID from Images where IND = ' + str(cache[CID]) + ' and CID=?',(CID,)).fetchone()
     return cur['IID']
 
 def FetchPatientName(PID):
@@ -243,6 +248,7 @@ def NavigateToStudy(PID, study):
 
 
 def NavigateToFirstImage(CID, PID):
+
     IID = FetchFirstImageInCollection(CID)
     url = GetImageURL(IID)[0]
     # patient_name = FetchPatientName(PID)
@@ -251,6 +257,7 @@ def NavigateToFirstImage(CID, PID):
     return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
 
 def NavigateToImage(CID, Index, PID,help_msg = None):
+    cache[CID] = Index
     IID = FetchScroll(CID, Index)
     url = GetImageURL(IID)[0]
     msg = 'open image'
