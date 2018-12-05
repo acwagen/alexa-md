@@ -1,7 +1,7 @@
 from alexamd import app, ask
 import flask
 from flask import render_template
-from flask_ask import Ask, statement,session
+from flask_ask import Ask, statement,session, question
 import flask_ask
 from jinja2 import Template
 from boto.s3.connection import S3Connection
@@ -14,9 +14,19 @@ conn = sqlite3.connect('alexamd.db')
 
 
 
-def question(msg):
-    resp = flask_ask.question(msg)
-    resp._response.pop('shouldEndSession', None)
+def create_response(resp):
+    resp._response.pop('shouldEndSession')
+
+    if 'directives' not in resp._response:
+        resp._response['directives'] = []
+    resp._response['directives'].append({
+      "type": "GameEngine.StartInputHandler",
+      "timeout": 90000,
+      "proxies": [],
+      "recognizers": {},
+      "events": {}
+    })
+
     return resp
 
 # global variables
@@ -93,7 +103,7 @@ def disply_image_item(url, display_text):
 # Used in Patient Page
  #return list of tuples (CID, study)
 def FetchPatientsInfo(PID):
-   
+
     db = get_db()
     cur = db.execute('select CID,Study from Collections where PID = ?', (PID,))
     res = []
@@ -173,7 +183,7 @@ def FetchImageCount(CID):
 def GetImageURL(image_name):
     # assume that image_name.jpg must exist in the S3 bucket
     s3 = boto3.client('s3')
-    # image_name = image_name +".jpg"  
+    # image_name = image_name +".jpg"
     # don't need to manual add extention
     image_name = image_name.lower()
     s3.head_object(Bucket='alexa-md-495', Key=image_name)
@@ -190,11 +200,11 @@ def NavigateToHome():
     for row in patent_info:
         patient_names.append(row['P_First'])
     msg = flask.render_template('welcome')
-    return question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1')
+    return create_response(question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1'))
 
 
 def NavigateToPatient(PID):
-    
+
     patient_infos = FetchPatientsInfo(PID)
     display_texts = []
     all_studies = set()
@@ -203,11 +213,11 @@ def NavigateToPatient(PID):
             continue
         all_studies.add(info[1])
         display_texts.append(str(info[1]))
- 
+
     msg = 'open patient page'
     path = GetCurrentPath()
-    return question(msg).list_display_render(title=path, template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1')
-    
+    return create_response(question(msg).list_display_render(title=path, template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1'))
+
 
 def NavigateToStudy(PID, study):
     patient_infos = FetchPatientsInfo(PID)
@@ -217,7 +227,7 @@ def NavigateToStudy(PID, study):
             CIDS.append(info[0])
     if len(CIDS)==0:
         msg = 'This patient has no '+ study
-        return question(msg)
+        return create_response(question(msg))
     image_infos = FetchFirstImagesList(CIDS)
     display_items = []
     for info in image_infos:
@@ -229,7 +239,7 @@ def NavigateToStudy(PID, study):
         display_items.append(disply_image_item(url,c_name))
     msg = 'Open study page'
     path = GetCurrentPath()
-    return question(msg).list_display_render(title=path, template='ListTemplate2', listItems = display_items, hintText = 'Open 1')
+    return create_response(question(msg).list_display_render(title=path, template='ListTemplate2', listItems = display_items, hintText = 'Open 1'))
 
 
 def NavigateToFirstImage(CID, PID):
@@ -238,7 +248,7 @@ def NavigateToFirstImage(CID, PID):
     # patient_name = FetchPatientName(PID)
     msg = 'open image'
     path = GetCurrentPath()
-    return question(msg).display_render(title=path,  template='BodyTemplate7', image=url)
+    return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
 
 def NavigateToImage(CID, Index, PID,help_msg = None):
     IID = FetchScroll(CID, Index)
@@ -248,15 +258,15 @@ def NavigateToImage(CID, Index, PID,help_msg = None):
     if help_msg != None:
         msg = help_msg
     path = GetCurrentPath()
-    return question(msg).display_render(title=path,  template='BodyTemplate7', image=url)
-    
+    return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
 
 
-    
 
- #---------------------------------------------------------------------   
 
-#functions that transfer Display ID into PID, CID   
+
+ #---------------------------------------------------------------------
+
+#functions that transfer Display ID into PID, CID
 
 def GetPidFromDisplayID(display_id):
     db = get_db()
@@ -267,14 +277,14 @@ def GetPidFromDisplayID(display_id):
         return None
     else:
         return str(patent_info[display_id]['PID'])
-    
+
 def GetStudyFromDisplayID(display_id, PID):
     patient_infos = FetchPatientsInfo(PID)
     if display_id >= len(patient_infos):
         return None
     else:
         return patient_infos[display_id][1]
-    
+
 def GetCidFromDisplayID(display_id, PID, study):
     patient_infos = FetchPatientsInfo(PID)
     CIDS = []
@@ -303,7 +313,7 @@ def GetCurrentPath():
         res += " | Collection: "+ FetchCollectionNameByID(session.attributes['collection'])
         res += " | Index: "+ str(session.attributes['index'])
         return res
-        
+
     else:
         print("Level name is invalid")
         return None
@@ -323,10 +333,10 @@ def open_response(msg, filename):
        url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':file_name,})
        parts = url.split('?')
        true_url = parts[0]
-       return question(msg).display_render(title=filename,  template='BodyTemplate7', image=true_url)
+       return create_response(question(msg).display_render(title=filename,  template='BodyTemplate7', image=true_url))
     except ClientError:
       retry_message = 'There is no '+ filename +' in the file system, please retry'
-      return question(retry_message).reprompt(retry_message)
+      return create_response(question(retry_message).reprompt(retry_message))
 
 
 @ask.launch
@@ -337,7 +347,7 @@ def launch():
     # session.attributes['study'] = None
     # session.attributes['collection'] = None
     # session.attributes['index'] = None
-    print(session.attributes)                        
+    print(session.attributes)
     return NavigateToHome()
 
 
@@ -370,13 +380,13 @@ def open(imageIndex):
     print('Open')
 
     if session.attributes['level']=='home':
-        
+
         if useID:
-            
+
             display_id = int(filename)-1
             pid = GetPidFromDisplayID(display_id)
             if pid == None:
-                return question('out of bound, please retry')
+                return create_response(question('out of bound, please retry'))
             print('PID is ' + pid)
             session.attributes['patient'] = pid # set the current Patient
             session.attributes['level'] = 'patient'
@@ -385,22 +395,22 @@ def open(imageIndex):
             PID = FetchPatientByFirstName(filename)
             if PID == None:
                 msg = 'Please try another name'
-                return question(msg)
+                return create_response(question(msg))
             elif PID == 'duplicate':
                 msg = 'There are more than ' + filename + ' in the file system'
-                return question(msg)
+                return create_response(question(msg))
             else:
                 session.attributes['patient'] = PID
                 session.attributes['level'] = 'patient'
                 return NavigateToPatient(session.attributes['patient'])
-   
+
     elif session.attributes['level'] == 'patient':
         # if not string, filename = cid. if string, filename = study
         if useID:
             display_id = int(filename)-1
             study = GetStudyFromDisplayID(display_id,session.attributes['patient'])
             if study == None:
-                return question('out of bound, please retry')
+                return create_response(question('out of bound, please retry'))
 
             print('Study is ' + study)
             session.attributes['study'] = study
@@ -415,7 +425,7 @@ def open(imageIndex):
             display_id = int(filename)-1
             CID = GetCidFromDisplayID(display_id,session.attributes['patient'],session.attributes['study'])
             if CID == None:
-                return question('out of bound, please retry')
+                return create_response(question('out of bound, please retry'))
             print('CID is '+CID)
             session.attributes['collection'] = CID
             session.attributes['index'] = 0
@@ -429,7 +439,7 @@ def open(imageIndex):
             return NavigateToFirstImage(session.attributes['collection'],session.attributes['patient'])
     elif session.attributes['level'] == 'image':
         msg = "You should not call open in this stage, try another command"
-        return question(msg)
+        return create_response(question(msg))
     else:
         # should not happen
         print("this should not happen")
@@ -439,7 +449,7 @@ def open(imageIndex):
 
 @ask.intent("ReturnIntent")
 def returndir():
-    
+
     if session.attributes['level']=='home' or session.attributes['level'] == 'patient':
         # goes back to home level and resets patient
         session.attributes['level'] = 'home'
@@ -447,7 +457,7 @@ def returndir():
 
         # displays list of patients
         return launch()
-        
+
     elif session.attributes['level'] == 'study':
         # goes back one session.attributes level and resets study
         session.attributes['level'] = 'patient'
@@ -532,7 +542,7 @@ def help():
     # For Beta stage, with the help of session.attributes, the help info will be more
     # specific.
     help_msg = render_template('help')
-    return question(help_msg)
+    return create_response(question(help_msg))
     # if session.attributes.attributes['curr_index'] == -1:
     #     return start_response_s3(help_msg)
     # else:
