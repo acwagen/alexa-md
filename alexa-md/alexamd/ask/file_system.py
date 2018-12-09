@@ -188,8 +188,6 @@ def FetchImageCount(CID):
 def GetImageURL(image_name):
     # assume that image_name.jpg must exist in the S3 bucket
     s3 = boto3.client('s3')
-    # image_name = image_name +".jpg"
-    # don't need to manual add extention
     image_name = image_name.lower()
     s3.head_object(Bucket='alexa-md-495', Key=image_name)
     url = s3.generate_presigned_url('get_object',Params={'Bucket':'alexa-md-495','Key':image_name,})
@@ -219,7 +217,7 @@ def NavigateToPatient(PID):
         all_studies.add(info[1])
         display_texts.append(str(info[1]))
 
-    msg = 'open patient page'
+    msg = 'patient page'
     path = GetCurrentPath()
     return create_response(question(msg).list_display_render(title=path, template='ListTemplate1', listItems = display_text_items(display_texts), hintText = 'Open 1'))
 
@@ -242,7 +240,7 @@ def NavigateToStudy(PID, study):
         image_count = FetchImageCount(info[1])
         c_name = "Collection Name: "+c_name + " , "+"Image Counts: "+str(image_count)
         display_items.append(disply_image_item(url,c_name))
-    msg = 'Open study page'
+    msg = 'study page'
     path = GetCurrentPath()
     return create_response(question(msg).list_display_render(title=path, template='ListTemplate2', listItems = display_items, hintText = 'Open 1'))
 
@@ -252,7 +250,7 @@ def NavigateToFirstImage(CID, PID):
     IID = FetchFirstImageInCollection(CID)
     url = GetImageURL(IID)[0]
     # patient_name = FetchPatientName(PID)
-    msg = 'open image'
+    msg = 'image'
     path = GetCurrentPath()
     return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
 
@@ -260,7 +258,7 @@ def NavigateToImage(CID, Index, PID,help_msg = None):
     cache[CID] = Index
     IID = FetchScroll(CID, Index)
     url = GetImageURL(IID)[0]
-    msg = 'open image'
+    msg = ''
     # patient_name = FetchPatientName(PID)
     if help_msg != None:
         msg = help_msg
@@ -350,19 +348,12 @@ def open_response(msg, filename):
 def launch():
     print('launch')
     session.attributes['level'] = 'home'
-    # session.attributes['patient'] = None
-    # session.attributes['study'] = None
-    # session.attributes['collection'] = None
-    # session.attributes['index'] = None
     print(session.attributes)
     return NavigateToHome()
 
 
 @ask.intent("StartIntent")
 def start():
-    # msg = render_template('welcome')
-    # session.attributes.attributes['curr_index'] = -1
-    # return start_response_s3(msg)
     print("running start")
     session.attributes['level'] = 'home'
     session.attributes['patient'] = None
@@ -496,7 +487,7 @@ def next(number):
     session.attributes['index'] += int(number)
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
-        help_msg = 'Moving ' + str(number)+" spaces forward went out of bounds. Can't go next"
+        help_msg = "No next image"
         session.attributes['index'] -= int(number)
         return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'], help_msg)
     else:
@@ -511,7 +502,7 @@ def nextOne():
     session.attributes['index'] += 1
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
-        help_msg = "Moving 1 space forward went out of bounds. Can't go next"
+        help_msg = "No next image"
         session.attributes['index'] -= 1
         return NavigateToImage(session.attributes['collection'], session.attributes['index'], session.attributes['patient'],help_msg)
     else:
@@ -526,7 +517,7 @@ def previous(number):
     session.attributes['index'] -= int(number)
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
-        help_msg = "Moving " + str(number)+" spaces backward went out of bounds. Can't go to previous"
+        help_msg = "No previous image"
         session.attributes['index'] += int(number)
         return NavigateToImage(session.attributes['collection'], session.attributes['index'], session.attributes['patient'],help_msg)
     else:
@@ -541,7 +532,7 @@ def previousOne():
     session.attributes['index'] -= 1
     item = FetchScroll(session.attributes['collection'], session.attributes['index'])
     if item == None:
-        help_msg = "Moving 1 space backward went out of bounds. Can't go to previous"
+        help_msg = "No previous image"
         session.attributes['index'] += 1
         return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'], help_msg)
     else:
@@ -559,11 +550,6 @@ def help():
     # specific.
     help_msg = render_template('help')
     return create_response(question(help_msg))
-    # if session.attributes.attributes['curr_index'] == -1:
-    #     return start_response_s3(help_msg)
-    # else:
-    #     image_name = my_list[session.attributes.attributes['curr_index']]["textContent"]["primaryText"]["text"]
-    #     return open_response(help_msg, image_name)
 
 def error():
 
