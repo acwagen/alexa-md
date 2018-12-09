@@ -40,7 +40,7 @@
                         }
                     ],
                     "samples": [
-                        "scroll {number}",
+                        "scroll down {number}",
                         "next {number}"
                     ]
                 },
@@ -53,7 +53,7 @@
                         }
                     ],
                     "samples": [
-                        "scroll back {number}",
+                        "scroll up {number}",
                         "previous {number}"
                     ]
                 },
