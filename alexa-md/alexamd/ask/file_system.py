@@ -202,7 +202,8 @@ def NavigateToHome():
     patient_names = []
     for row in patent_info:
         patient_names.append(row['P_First'])
-    msg = flask.render_template('welcome')
+    # msg = flask.render_template('welcome')
+    msg = "Welcom to alexa md"
     return create_response(question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1'))
 
 
@@ -316,7 +317,10 @@ def GetCurrentPath():
         res = "Patient: "+FetchPatientName(session.attributes['patient'])
         res += " | Study: "+ session.attributes['study']
         res += " | Collection: "+ FetchCollectionNameByID(session.attributes['collection'])
-        res += " | Index: "+ str(session.attributes['index'])
+        if session.attributes['collection'] in cache and session.attributes['index']==0:
+            res += " | Index: " + str(cache[session.attributes['collection']])
+        else:
+            res += " | Index: "+ str(session.attributes['index'])
         return res
 
     else:
@@ -348,7 +352,6 @@ def open_response(msg, filename):
 def launch():
     print('launch')
     session.attributes['level'] = 'home'
-    print(session.attributes)
     return NavigateToHome()
 
 
