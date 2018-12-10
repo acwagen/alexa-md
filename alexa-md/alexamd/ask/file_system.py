@@ -496,23 +496,12 @@ def next(number):
 @ask.intent("AMAZON.NextIntent")
 def nextOne():
     # get nextIndex
-    next(1)
-    # if session.attributes['level'] != 'image':
-    #     return error()
-
-    # session.attributes['index'] += 1
-    # item = FetchScroll(session.attributes['collection'], session.attributes['index'])
-    # if item == None:
-    #     help_msg = "Moving 1 space forward went out of bounds. Can't go next"
-    #     session.attributes['index'] -= 1
-    #     return NavigateToImage(session.attributes['collection'], session.attributes['index'], session.attributes['patient'],help_msg)
-    # else:
-    #     return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
+    return next(1)
 
 
 @ask.intent("AMAZON.ScrollDownIntent")
 def ScrollDownOne():
-    next(1)
+    return next(1)
 
 
 @ask.intent("PreviousIntent", mapping={'number': 'number'})
@@ -532,23 +521,12 @@ def previous(number):
 
 @ask.intent("AMAZON.PreviousIntent")
 def previousOne():
-    # get nextIndex
-    previous(1)
-    # if session.attributes['level'] != 'image':
-    #     return error()
-    # session.attributes['index'] -= 1
-    # item = FetchScroll(session.attributes['collection'], session.attributes['index'])
-    # if item == None:
-    #     help_msg = "Moving 1 space backward went out of bounds. Can't go to previous"
-    #     session.attributes['index'] += 1
-    #     return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'], help_msg)
-    # else:
-    #     return NavigateToImage(session.attributes['collection'], session.attributes['index'],session.attributes['patient'])
+    return previous(1)
 
 
 @ask.intent("AMAZON.ScrollUpIntent")
 def scrollUpOne():
-    previous(1)
+    return previous(1)
 
 
 @ask.intent("AMAZON.HelpIntent")
