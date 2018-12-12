@@ -10,10 +10,10 @@ class TestIndex(TestAlexaMDUploadBase):
         response = self.app.get('/')
         self.assertEqual(response.status_code, 200)
 
-        list_values = [ 'w, alyssa',
-                    's, anthony',
-                    'y, derek',
-                    'w, mike' ]
+        list_values = [ 's, anthony',
+                    'w, alyssa',
+                    'w, mike',
+                    'y, derek']
 
         soup = bs4.BeautifulSoup(response.data, "html.parser")
         list_items = soup.find_all('li')

@@ -14,7 +14,7 @@ class TestOpenPatient(AlexaMDTestBase):
         list_items = self.getListItemsFromResponse(response_data)
         session_attributes = self.getSessionAttributesFromResponse(response_data)
 
-        self.assertListEqual(list_items, ['CT', 'MRI'])
+        self.assertListEqual(list_items, ['CT', 'MR'])
         self.assertDictEqual(session_attributes, {'patient': '1', 'level': 'patient'})
 
     def test_empty(self):

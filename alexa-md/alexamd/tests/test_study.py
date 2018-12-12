@@ -9,10 +9,9 @@ class TestOpenStudy(AlexaMDTestBase):
         # open study
         response = self.app.post('/', data=self.openIntent('1', session_attributes={'level': 'patient', 'patient': '1'}))
         self.assertEqual(200, response.status_code)
-
         response_data = json.loads(response.data)
         list_items = self.getListItemsFromResponse(response_data)
         session_attributes = self.getSessionAttributesFromResponse(response_data)
 
-        self.assertListEqual(list_items, ['alyssa_CT'])
+        self.assertListEqual(list_items, ['Collection: alyssa_CT , Image Counts: 2'])
         self.assertDictEqual(session_attributes, {'patient': '1', 'study': 'CT', 'level': 'study'})
