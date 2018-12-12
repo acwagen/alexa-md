@@ -201,10 +201,11 @@ def NavigateToHome():
     patent_info = cur.fetchall()
     patient_names = []
     for row in patent_info:
-        patient_names.append(row['P_First'])
-    # msg = flask.render_template('welcome')
+        last_first_name = row['P_Last'] + ', ' + row['P_First']
+        patient_names.append(last_first_name)
     msg = "Welcome to alexa md"
-    return create_response(question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1'))
+    path = GetCurrentPath()
+    return create_response(question(msg).list_display_render(title=path, template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1'))
 
 
 def NavigateToPatient(PID):
@@ -303,30 +304,27 @@ def GetCidFromDisplayID(display_id, PID, study):
 
 
 def GetCurrentPath():
+    # get current pathname for image navigation
+    path = 'Alexa MD'
+    if session.attributes['level'] == 'home':
+        return path
+    path += ' /' + FetchPatientName(session.attributes['patient'])
     if session.attributes['level'] == 'patient':
-        res = "Patient: " + FetchPatientName(session.attributes['patient'])
-        return res
-    elif session.attributes['level'] == 'study':
-        res = "Patient: " + FetchPatientName(session.attributes['patient'])
-        res += " | Study: " + session.attributes['study']
-        return res
-    elif session.attributes['level'] == 'image':
-        res = "Patient: " + FetchPatientName(session.attributes['patient'])
-        res += " | Study: " + session.attributes['study']
-        res += " | Collection: " + FetchCollectionNameByID(session.attributes['collection'])
-        if session.attributes['collection'] in cache and session.attributes['index'] == 0:
-            res += " | Index: " + str(cache[session.attributes['collection']] + 1)
-        else:
-            res += " | Index: " + str(session.attributes['index'] + 1)
-        return res
-
+        return path
+    path += '/' + session.attributes['study']
+    if session.attributes['level'] == 'study':
+        return path
+    path += '/' + FetchCollectionNameByID(session.attributes['collection'])
+    if session.attributes['collection'] in cache and session.attributes['index'] == 0:
+        path += "  Image " + str(cache[session.attributes['collection']] + 1) + " of " + str(FetchImageCount(session.attributes['collection']))
     else:
-        print("Level name is invalid")
-        return None
+        path += "  Image " + str(session.attributes['index'] + 1) + " of " + str(FetchImageCount(session.attributes['collection']))
+    if session.attributes['level'] == 'image':
+        return path
 
 
 
-# fucntions to implement the skills.
+# functions to implement the skills.
 
 def open_response(msg, filename):
     s3 = boto3.client('s3')
@@ -349,6 +347,7 @@ def open_response(msg, filename):
 def launch():
     print('launch')
     session.attributes['level'] = 'home'
+    session.attributes['help'] = False
     return NavigateToHome()
 
 
@@ -547,9 +546,8 @@ def help():
     # Renders a help screen at any instance of the application
     session.attributes['help'] = True
     help_msg = render_template('help')
-    # return create_response(question(help_msg))
 
-    # actuallly give help card
+    # actually give help card
     header = 'Help Using AlexaMD'
 
     content = ('On navigation, say <b>open <i>[number]</i></b> to open the corresponding folder or collection<br/><br/>'
@@ -565,7 +563,6 @@ def help():
         }
     }
 
-    # return create_response(question(help_msg).display_render(template='BodyTemplate1', title=header, background_image_url=url, text=textJson))
     return create_response(question(help_msg).display_render(template='BodyTemplate1', title=header, text=textJson))
 
 def error():
