@@ -26,7 +26,7 @@ class TestUpload(TestAlexaMDUploadBase):
     def test_default(self):
         option_values = { -1 : 'New Sequence',
                            1 : 'alyssa_CT',
-                           2 : 'alyssa_MRI' }
+                           2 : 'alyssa_MR' }
         self.assertOptions('/patient/1/upload/', option_values)
 
     @patch('alexamd_upload.views.views.s3upload')
@@ -51,7 +51,7 @@ class TestUpload(TestAlexaMDUploadBase):
     @patch('alexamd_upload.views.views.s3upload')
     def test_with_new_sequence(self, s3upload_function):
         response = self.upload('/patient/1/upload/',
-                               [os.path.join(self.RESOURCES_DIR, 'test2-OT.dcm')],
+                               [os.path.join(self.RESOURCES_DIR, 'test3-MR.dcm')],
                                -1,
                                new_collection='test sequence')
         self.assertEqual(response.status_code, 200)
@@ -59,7 +59,7 @@ class TestUpload(TestAlexaMDUploadBase):
 
         option_values = { -1 : 'New Sequence',
                            1 : 'alyssa_CT',
-                           2 : 'alyssa_MRI',
+                           2 : 'alyssa_MR',
                            9 : 'test sequence' }
         self.assertOptions('/patient/1/upload/', option_values)
         # assert number of images in sequence
@@ -76,7 +76,7 @@ class TestUpload(TestAlexaMDUploadBase):
     def test_multiple_modalities(self, s3upload_function):
         response = self.upload('/patient/1/upload/',
                                [os.path.join(self.RESOURCES_DIR, 'test1-CT.dcm'),
-                               os.path.join(self.RESOURCES_DIR, 'test2-OT.dcm')],
+                               os.path.join(self.RESOURCES_DIR, 'test3-MR.dcm')],
                                -1,
                                new_collection='test sequence')
         self.assertEqual(response.status_code, 200)
@@ -84,7 +84,7 @@ class TestUpload(TestAlexaMDUploadBase):
 
         option_values = { -1 : 'New Sequence',
                            1 : 'alyssa_CT',
-                           2 : 'alyssa_MRI',
+                           2 : 'alyssa_MR',
                            9 : 'test sequence'}
         self.assertOptions('/patient/1/upload/', option_values)
         # assert number of images in sequence
@@ -92,7 +92,7 @@ class TestUpload(TestAlexaMDUploadBase):
     @patch('alexamd_upload.views.views.s3upload')
     def test_different_modality_existing_collection(self, s3upload_function):
         response = self.upload('/patient/1/upload/',
-                               [ os.path.join(self.RESOURCES_DIR, 'test2-OT.dcm')],
+                               [ os.path.join(self.RESOURCES_DIR, 'test3-MR.dcm')],
                                1)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(s3upload_function.call_count, 0)

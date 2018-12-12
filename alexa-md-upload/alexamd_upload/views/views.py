@@ -7,6 +7,7 @@ import numpy as np
 import numpngw
 import pydicom
 import io
+
 def get_context(patient_id=None):
     context = { 'theme': session['theme'] if 'theme' in session else 'dark' }
 
@@ -25,9 +26,10 @@ def index():
     context = get_context()
     context['patients'] = []
 
-    for patient in db.execute('select pid, p_first, p_last from patients'):
+    for patient in db.execute('select pid, p_first, p_last from patients order by p_last, p_first'):
         context['patients'].append({'id': patient['PID'],
             'name': '{}, {}'.format(patient['P_Last'], patient['P_First'])})
+
 
     return render_template('index.html', **context)
 

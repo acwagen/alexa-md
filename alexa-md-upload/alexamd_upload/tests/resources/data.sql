@@ -6,13 +6,13 @@ INSERT INTO Patients(P_First,P_Last) VALUES
 
 INSERT INTO Collections(C_Name,PID, Study) VALUES
 ("alyssa_CT",1,"CT"),
-("alyssa_MRI",1,"MRI"),
+("alyssa_MR",1,"MR"),
 ("anthony_CT",2,"CT"),
-("anthony_MRI",2,"MRI"),
+("anthony_MR",2,"MR"),
 ("derek_CT",3,"CT"),
-("derek_MRI",3,"MRI"),
+("derek_MR",3,"MR"),
 ("mike_CT",4,"CT"),
-("mike_MRI",4,"MRI");
+("mike_MR",4,"MR");
 
 INSERT INTO Images(IID,CID,IND) VALUES
 ("alyssa1",1,0),

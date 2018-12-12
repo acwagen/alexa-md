@@ -8,7 +8,7 @@ from mock import patch
 class TestManageCollections(TestAlexaMDUploadBase):
     def test_default(self):
         list_values = { 1 : 'alyssa_CT (3 images)',
-                        2 : 'alyssa_MRI (1 image)' }
+                        2 : 'alyssa_MR (1 image)' }
         self.assertListItems('/patient/1/manage/', list_values)
 
     @patch('alexamd_upload.views.views.s3delete')
@@ -20,5 +20,5 @@ class TestManageCollections(TestAlexaMDUploadBase):
         self.assertEqual(s3delete_function.call_count, 1)
         self.assertItemsEqual(s3delete_function.call_args_list[0][0][0], s3delete_call_args)
 
-        list_values = { 2 : 'alyssa_MRI (1 image)' }
+        list_values = { 2 : 'alyssa_MR (1 image)' }
         self.assertListItems('/patient/1/manage/', list_values)
