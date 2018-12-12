@@ -203,7 +203,7 @@ def NavigateToHome():
     for row in patent_info:
         patient_names.append(row['P_First'])
     # msg = flask.render_template('welcome')
-    msg = "Welcom to alexa md"
+    msg = "Welcome to alexa md"
     return create_response(question(msg).list_display_render(title='Welcome', template='ListTemplate1', listItems = display_text_items(patient_names), hintText = 'Open 1'))
 
 
@@ -239,7 +239,7 @@ def NavigateToStudy(PID, study):
         c_name = FetchCollectionNameByID(info[1])
         c_name = c_name
         image_count = FetchImageCount(info[1])
-        c_name = "Collection Name: "+c_name + " , "+"Image Counts: "+str(image_count)
+        c_name = "Collection: "+c_name + " , "+"Image Counts: "+str(image_count)
         display_items.append(disply_image_item(url,c_name))
     msg = 'study page'
     path = GetCurrentPath()
@@ -253,7 +253,7 @@ def NavigateToFirstImage(CID, PID):
     # patient_name = FetchPatientName(PID)
     msg = 'image'
     path = GetCurrentPath()
-    return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
+    return create_response(question(msg).display_render(title=path, template='BodyTemplate7', image=url))
 
 def NavigateToImage(CID, Index, PID,help_msg = None):
     cache[CID] = Index
@@ -264,10 +264,7 @@ def NavigateToImage(CID, Index, PID,help_msg = None):
     if help_msg != None:
         msg = help_msg
     path = GetCurrentPath()
-    return create_response(question(msg).display_render(title=path,  template='BodyTemplate7', image=url))
-
-
-
+    return create_response(question(msg).display_render(title=path, template='BodyTemplate7', image=url))
 
 
  #---------------------------------------------------------------------
@@ -307,20 +304,20 @@ def GetCidFromDisplayID(display_id, PID, study):
 
 def GetCurrentPath():
     if session.attributes['level'] == 'patient':
-        res = "Patient: "+FetchPatientName(session.attributes['patient'])
+        res = "Patient: " + FetchPatientName(session.attributes['patient'])
         return res
     elif session.attributes['level'] == 'study':
-        res = "Patient: "+FetchPatientName(session.attributes['patient'])
-        res += " | Study: "+ session.attributes['study']
+        res = "Patient: " + FetchPatientName(session.attributes['patient'])
+        res += " | Study: " + session.attributes['study']
         return res
-    elif session.attributes['level']== 'image':
-        res = "Patient: "+FetchPatientName(session.attributes['patient'])
-        res += " | Study: "+ session.attributes['study']
-        res += " | Collection: "+ FetchCollectionNameByID(session.attributes['collection'])
-        if session.attributes['collection'] in cache and session.attributes['index']==0:
-            res += " | Index: " + str(cache[session.attributes['collection']])
+    elif session.attributes['level'] == 'image':
+        res = "Patient: " + FetchPatientName(session.attributes['patient'])
+        res += " | Study: " + session.attributes['study']
+        res += " | Collection: " + FetchCollectionNameByID(session.attributes['collection'])
+        if session.attributes['collection'] in cache and session.attributes['index'] == 0:
+            res += " | Index: " + str(cache[session.attributes['collection']] + 1)
         else:
-            res += " | Index: "+ str(session.attributes['index'])
+            res += " | Index: " + str(session.attributes['index'] + 1)
         return res
 
     else:
@@ -363,6 +360,7 @@ def start():
     session.attributes['study'] = None
     session.attributes['collection'] = None
     session.attributes['index'] = None
+    session.attributes['help'] = False
     return NavigateToHome()
 
 @ask.intent("OpenIntent", mapping={'imageIndex': 'imageIndex'})
@@ -439,7 +437,7 @@ def open(imageIndex):
             session.attributes['level'] = 'image'
             return NavigateToFirstImage(session.attributes['collection'],session.attributes['patient'])
     elif session.attributes['level'] == 'image':
-        msg = "You should not call open in this stage, try another command"
+        msg = "You're already in a collection. Try saying next or previous"
         return create_response(question(msg))
     else:
         # should not happen
@@ -451,7 +449,19 @@ def open(imageIndex):
 @ask.intent("ReturnIntent")
 def returndir():
 
-    if session.attributes['level']=='home' or session.attributes['level'] == 'patient':
+    if session.attributes['help']:
+        # go back to same level as before
+        session.attributes['help'] = False
+        if session.attributes['level'] == 'home':
+            return launch()
+        elif session.attributes['level'] == 'patient':
+            return NavigateToPatient(session.attributes['patient'])
+        elif session.attributes['level'] == 'study':
+            return NavigateToStudy(session.attributes['patient'],session.attributes['study'])
+        elif session.attributes['level'] == 'image':
+            return NavigateToFirstImage(session.attributes['collection'],session.attributes['patient'])
+
+    if session.attributes['level'] == 'home' or session.attributes['level'] == 'patient':
         # goes back to home level and resets patient
         session.attributes['level'] = 'home'
         session.attributes['patient'] = None
@@ -534,11 +544,29 @@ def scrollUpOne():
 
 @ask.intent("AMAZON.HelpIntent")
 def help():
-    # for now, when user ask help, the alexa will navigate the user to screen.
-    # For Beta stage, with the help of session.attributes, the help info will be more
-    # specific.
+    # Renders a help screen at any instance of the application
+    session.attributes['help'] = True
     help_msg = render_template('help')
-    return create_response(question(help_msg))
+    # return create_response(question(help_msg))
+
+    # actuallly give help card
+    header = 'Help Using AlexaMD'
+
+    content = ('On navigation, say <b>open <i>[number]</i></b> to open the corresponding folder or collection<br/><br/>'
+               'On image view, say <b>next</b>, <b>previous</b> or <b>scroll down/up <i>[number]</i></b> '
+               'to traverse images in a collection<br/><br/>'
+               'Say <b>home</b> to return back to the home menu at any time<br/><br/>'
+               'Say <b>return</b> on any screen to go back <i>(try it now to go back)</i>')
+
+    textJson = {
+        "primaryText": {
+            "type": "RichText",
+            "text": content
+        }
+    }
+
+    # return create_response(question(help_msg).display_render(template='BodyTemplate1', title=header, background_image_url=url, text=textJson))
+    return create_response(question(help_msg).display_render(template='BodyTemplate1', title=header, text=textJson))
 
 def error():
 
